@@ -1,0 +1,2926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KWL Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #00B5B8;
+    --teal-dark: #008E91;
+    --teal-light: #E0F7F7;
+    --blue: #5BC4E5;
+    --blue-light: #EAF7FC;
+    --grey: #9EA3A8;
+    --grey-light: #F4F5F6;
+    --grey-mid: #E2E4E7;
+    --dark: #1A2332;
+    --dark-mid: #2D3748;
+    --text: #374151;
+    --text-light: #6B7280;
+    --white: #FFFFFF;
+    --sidebar-width: 280px;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F0F2F5;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dark);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #login-screen::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,181,184,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    border-radius: 50%;
+  }
+
+  #login-screen::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(91,196,229,0.1) 0%, transparent 70%);
+    bottom: -50px; left: -50px;
+    border-radius: 50%;
+  }
+
+  .login-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 52px 48px;
+    width: 420px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    animation: slideUp 0.5s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+
+  .logo-icon {
+    width: 52px; height: 52px;
+  }
+
+  .login-brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .login-brand .brand-top {
+    font-family: 'DM Serif Display', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--grey);
+    line-height: 1;
+  }
+
+  .login-brand .brand-main {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.1;
+  }
+
+  .login-brand .brand-main span {
+    color: var(--teal);
+  }
+
+  .login-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--dark);
+    margin-bottom: 6px;
+  }
+
+  .login-card p {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 7px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--grey-mid);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--dark);
+    transition: border-color 0.2s;
+    outline: none;
+    background: var(--grey-light);
+  }
+
+  .form-group input:focus {
+    border-color: var(--teal);
+    background: white;
+  }
+
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.3px;
+  }
+
+  .login-btn:hover { background: var(--teal-dark); }
+  .login-btn:active { transform: scale(0.99); }
+
+  .login-error {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+    display: none;
+  }
+
+  .login-demo {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--grey-mid);
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  .login-demo strong { color: var(--text); }
+
+  /* ── APP SHELL ── */
+  #login-screen { display: none !important; }
+
+  #app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--dark);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-logo svg { width: 38px; height: 38px; flex-shrink: 0; }
+
+  .sidebar-brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-brand .sb-top {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    line-height: 1;
+  }
+
+  .sidebar-brand .sb-main {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    line-height: 1.2;
+  }
+
+  .sidebar-brand .sb-main span { color: var(--teal); }
+
+  .sidebar-user {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-avatar {
+    width: 34px; height: 34px;
+    background: var(--teal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    margin-bottom: 6px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    padding: 10px 24px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    color: rgba(255,255,255,0.6);
+    font-size: 13.5px;
+    font-weight: 400;
+    user-select: none;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.9);
+  }
+
+  .nav-item.active {
+    background: rgba(0,181,184,0.12);
+    border-left-color: var(--teal);
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  .nav-item svg {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .nav-item.active svg { opacity: 1; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--teal);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+  }
+
+  .logout-btn:hover { color: rgba(255,255,255,0.8); }
+
+  /* ── MAIN CONTENT ── */
+  .main-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: white;
+    padding: 0 36px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--grey-mid);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .topbar-title span {
+    color: var(--teal);
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .btn-primary {
+    background: var(--teal);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--teal-dark); }
+
+  .btn-secondary {
+    background: var(--grey-light);
+    color: var(--text);
+    border: 1.5px solid var(--grey-mid);
+  }
+  .btn-secondary:hover { background: var(--grey-mid); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-light);
+    border: 1.5px solid var(--grey-mid);
+  }
+  .btn-ghost:hover { background: var(--grey-light); color: var(--text); }
+
+  .page-body {
+    padding: 36px;
+    flex: 1;
+  }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.25s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── DASHBOARD ── */
+  .dashboard-welcome {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark-mid) 100%);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dashboard-welcome::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(0,181,184,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .dashboard-welcome h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: white;
+    margin-bottom: 6px;
+  }
+
+  .dashboard-welcome p {
+    color: rgba(255,255,255,0.55);
+    font-size: 14px;
+    max-width: 480px;
+  }
+
+  .dashboard-welcome .date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,181,184,0.2);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 16px;
+    border: 1px solid rgba(0,181,184,0.3);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 22px 24px;
+    border: 1px solid var(--grey-mid);
+    transition: box-shadow 0.2s;
+  }
+
+  .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  .stat-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .stat-icon.teal { background: var(--teal-light); color: var(--teal); }
+  .stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+  .stat-icon.grey { background: var(--grey-light); color: var(--grey); }
+  .stat-icon.green { background: #ECFDF5; color: var(--success); }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .dash-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--grey-mid);
+    overflow: hidden;
+  }
+
+  .dash-card-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--grey-mid);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dash-card-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .dash-card-body { padding: 20px 24px; }
+
+  .recent-matter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--grey-light);
+  }
+
+  .recent-matter:last-child { border-bottom: none; }
+
+  .matter-info { flex: 1; }
+  .matter-name { font-size: 13.5px; font-weight: 500; color: var(--dark); }
+  .matter-type { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+  .matter-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .badge-teal { background: var(--teal-light); color: var(--teal-dark); }
+  .badge-blue { background: var(--blue-light); color: #2A7FA0; }
+  .badge-grey { background: var(--grey-light); color: var(--text-light); }
+  .badge-green { background: #ECFDF5; color: #065F46; }
+  .badge-amber { background: #FFFBEB; color: #92400E; }
+
+  .quick-action {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--grey-light);
+    transition: all 0.15s;
+  }
+
+  .quick-action:last-child { border-bottom: none; }
+  .quick-action:hover .qa-title { color: var(--teal); }
+
+  .qa-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: var(--teal-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .qa-title { font-size: 13.5px; font-weight: 500; color: var(--dark); transition: color 0.15s; }
+  .qa-sub { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+  .qa-arrow { margin-left: auto; color: var(--grey); }
+
+  /* ── MATTERS ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .section-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--dark);
+  }
+
+  .section-header p {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .search-input-wrap {
+    position: relative;
+    flex: 1;
+  }
+
+  .search-input-wrap svg {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--grey);
+    width: 16px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 1.5px solid var(--grey-mid);
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--teal); }
+
+  .matters-table {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--grey-mid);
+    overflow: hidden;
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 80px;
+    padding: 12px 24px;
+    background: var(--grey-light);
+    border-bottom: 1px solid var(--grey-mid);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    gap: 12px;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 80px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--grey-light);
+    align-items: center;
+    gap: 12px;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: var(--grey-light); }
+
+  .table-row .client-name { font-weight: 500; color: var(--dark); font-size: 14px; }
+  .table-row .matter-ref { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .table-row .cell { font-size: 13.5px; color: var(--text); }
+
+  .action-btns { display: flex; gap: 6px; }
+
+  .icon-btn {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    border: 1.5px solid var(--grey-mid);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
+  .icon-btn svg { width: 13px; height: 13px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-light);
+  }
+
+  .empty-state svg { width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.3; display: block; }
+  .empty-state h3 { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 560px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+  }
+
+  .modal-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--grey-mid);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--dark);
+  }
+
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: var(--grey-light);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    transition: background 0.15s;
+  }
+
+  .modal-close:hover { background: var(--grey-mid); }
+
+  .modal-body { padding: 24px 28px; }
+  .modal-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 10px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .modal .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .modal .form-group input,
+  .modal .form-group select,
+  .modal .form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--grey-mid);
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--dark);
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+  }
+
+  .modal .form-group input:focus,
+  .modal .form-group select:focus,
+  .modal .form-group textarea:focus {
+    border-color: var(--teal);
+  }
+
+  .modal .form-group textarea { resize: vertical; min-height: 80px; }
+
+  /* ── CLAIM PAGES ── */
+  .claim-page-header {
+    background: white;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    border: 1px solid var(--grey-mid);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .claim-page-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+
+  .claim-page-header p {
+    font-size: 13px;
+    color: var(--text-light);
+    max-width: 500px;
+  }
+
+  .claim-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  .claim-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .claim-section {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--grey-mid);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .claim-section-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--grey-mid);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--grey-light);
+  }
+
+  .claim-section-header h3 {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .claim-section-header .section-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: var(--teal-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .claim-section-body { padding: 20px 24px; }
+
+  /* ── CHECKLIST ── */
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--grey-light);
+  }
+
+  .checklist-item:last-child { border-bottom: none; }
+
+  .check-control {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .check-btn {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1.5px solid var(--grey-mid);
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .check-btn.yes { border-color: var(--success); background: #ECFDF5; color: var(--success); }
+  .check-btn.no { border-color: var(--danger); background: #FEF2F2; color: var(--danger); }
+
+  .check-content { flex: 1; }
+  .check-label { font-size: 13.5px; font-weight: 500; color: var(--dark); line-height: 1.4; }
+  .check-detail { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+  .check-warning { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+  .check-warning.show { display: block; }
+
+  .checklist-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 16px;
+  }
+
+  .checklist-status.pass { background: #ECFDF5; color: #065F46; }
+  .checklist-status.fail { background: #FEF2F2; color: #991B1B; }
+  .checklist-status.pending { background: var(--grey-light); color: var(--text-light); }
+
+  /* ── ADMIN ── */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .admin-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--grey-mid);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .admin-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--teal); }
+
+  .admin-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--teal-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
+    margin-bottom: 14px;
+  }
+
+  .admin-card h3 { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .admin-card p { font-size: 13px; color: var(--text-light); }
+
+  .threshold-list { }
+
+  .threshold-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--grey-light);
+    gap: 16px;
+  }
+
+  .threshold-item:last-child { border-bottom: none; }
+
+  .threshold-label { font-size: 13.5px; font-weight: 500; color: var(--dark); }
+  .threshold-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+  .threshold-edit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .threshold-input {
+    width: 130px;
+    padding: 8px 12px;
+    border: 1.5px solid var(--grey-mid);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    text-align: right;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .threshold-input:focus { border-color: var(--teal); }
+
+  .save-indicator {
+    font-size: 12px;
+    color: var(--success);
+    display: none;
+  }
+
+  .save-indicator.show { display: inline; }
+
+  /* ── UNDERPAYMENT ── */
+  .calculator-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* ── USERS ── */
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .user-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--grey-mid);
+    padding: 24px;
+    text-align: center;
+  }
+
+  .user-card-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin: 0 auto 12px;
+  }
+
+  .user-card-name { font-size: 15px; font-weight: 600; color: var(--dark); }
+  .user-card-role { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .user-card-email { font-size: 12px; color: var(--teal); margin-top: 6px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--grey-mid); border-radius: 3px; }
+
+  .research-placeholder {
+    background: var(--grey-light);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <!-- KWL Logo SVG (arrows motif) -->
+      <svg class="logo-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="52" height="52" rx="10" fill="#1A2332"/>
+        <!-- top-left arrow -->
+        <path d="M10 10 L22 10 L22 14 L16 14 L22 20 L19 23 L13 17 L13 23 L10 23 Z" fill="#00B5B8" opacity="0.9"/>
+        <!-- top-right arrow -->
+        <path d="M42 10 L30 10 L30 14 L36 14 L30 20 L33 23 L39 17 L39 23 L42 23 Z" fill="#9EA3A8" opacity="0.7"/>
+        <!-- bottom-left arrow -->
+        <path d="M10 42 L22 42 L22 38 L16 38 L22 32 L19 29 L13 35 L13 29 L10 29 Z" fill="#5BC4E5" opacity="0.8"/>
+        <!-- bottom-right arrow -->
+        <path d="M42 42 L30 42 L30 38 L36 38 L30 32 L33 29 L39 35 L39 29 L42 29 Z" fill="#00B5B8" opacity="0.6"/>
+      </svg>
+      <div class="login-brand">
+        <span class="brand-top">Kelly Workplace</span>
+        <span class="brand-main">KWL <span>Assistant</span></span>
+      </div>
+    </div>
+
+    <h2>Welcome back</h2>
+    <p>Sign in to access your legal assistant</p>
+
+    <div class="form-group">
+      <label>Email address</label>
+      <input type="email" id="login-email" placeholder="you@kwlawyers.com.au" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" />
+    </div>
+
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-error" id="login-error">Incorrect email or password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ══════════════ APP SHELL ══════════════ -->
+<div id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="52" height="52" rx="10" fill="#2D3748"/>
+          <path d="M10 10 L22 10 L22 14 L16 14 L22 20 L19 23 L13 17 L13 23 L10 23 Z" fill="#00B5B8" opacity="0.9"/>
+          <path d="M42 10 L30 10 L30 14 L36 14 L30 20 L33 23 L39 17 L39 23 L42 23 Z" fill="#9EA3A8" opacity="0.7"/>
+          <path d="M10 42 L22 42 L22 38 L16 38 L22 32 L19 29 L13 35 L13 29 L10 29 Z" fill="#5BC4E5" opacity="0.8"/>
+          <path d="M42 42 L30 42 L30 38 L36 38 L30 32 L33 29 L39 35 L39 29 L42 29 Z" fill="#00B5B8" opacity="0.6"/>
+        </svg>
+        <div class="sidebar-brand">
+          <span class="sb-top">Kelly Workplace</span>
+          <span class="sb-main">KWL <span>Assistant</span></span>
+        </div>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sb-avatar">JK</div>
+        <div class="user-info">
+          <div class="user-name" id="sb-name">Jane Kelly</div>
+          <div class="user-role" id="sb-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <div class="nav-item active" onclick="showView('dashboard', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item" onclick="showView('matters', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          Matters
+          <span class="nav-badge" id="matters-count">0</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Fair Work Act</div>
+        <div class="nav-item" onclick="showView('unfair-dismissal', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Unfair Dismissal
+        </div>
+        <div class="nav-item" onclick="showView('gp-dismissal', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Gen. Protections (Dismissal)
+        </div>
+        <div class="nav-item" onclick="showView('gp-no-dismissal', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+          Gen. Protections (No Dismissal)
+        </div>
+        <div class="nav-item" onclick="showView('underpayment', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Underpayments
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Equal Opportunity Act</div>
+        <div class="nav-item" onclick="showView('discrimination', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2-8 4v2h16v-2c0-2-3-4-8-4z"/></svg>
+          Discrimination
+        </div>
+        <div class="nav-item" onclick="showView('reasonable-adjustments', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Reasonable Adjustments
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Sex Discrimination Act</div>
+        <div class="nav-item" onclick="showView('sexual-harassment', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Sexual Harassment
+        </div>
+      </div>
+
+      <div class="nav-section" id="admin-nav" style="display:none">
+        <div class="nav-section-label">Administration</div>
+        <div class="nav-item" onclick="showView('admin', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Settings & Thresholds
+        </div>
+        <div class="nav-item" onclick="showView('users', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Users & Roles
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions">
+        <button class="btn btn-primary" onclick="openNewMatterModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Matter
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="view active" id="view-dashboard">
+        <div class="dashboard-welcome">
+          <h1>Good morning 👋</h1>
+          <p>Welcome to your KWL Assistant. Manage matters, draft claims, run underpayment calculations and access up-to-date legal thresholds — all in one place.</p>
+          <div class="date-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="today-date"></span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon teal">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            </div>
+            <div class="stat-label">Active Matters</div>
+            <div class="stat-value" id="stat-matters">0</div>
+            <div class="stat-sub">across all claim types</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <div class="stat-label">Unfair Dismissal</div>
+            <div class="stat-value" id="stat-ud">0</div>
+            <div class="stat-sub">active matters</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="stat-label">Underpayment Claims</div>
+            <div class="stat-value" id="stat-up">0</div>
+            <div class="stat-sub">active matters</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon grey">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="stat-label">Gen. Protections</div>
+            <div class="stat-value" id="stat-gp">0</div>
+            <div class="stat-sub">active matters</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <h3>Recent Matters</h3>
+              <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showView('matters', document.querySelector('[onclick*=matters]'))">View all</button>
+            </div>
+            <div class="dash-card-body" id="recent-matters-list">
+              <div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">No matters yet. Create your first matter to get started.</div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card-header"><h3>Quick Actions</h3></div>
+            <div class="dash-card-body">
+              <div class="quick-action" onclick="openNewMatterModal()">
+                <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                <div><div class="qa-title">New Matter</div><div class="qa-sub">Create a new client matter</div></div>
+                <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+              </div>
+              <div class="quick-action" onclick="showView('underpayment', document.querySelector('[onclick*=underpayment]'))">
+                <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                <div><div class="qa-title">Underpayment Calculator</div><div class="qa-sub">Run an award calculation</div></div>
+                <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+              </div>
+              <div class="quick-action" onclick="showView('unfair-dismissal', document.querySelector('[onclick*=unfair-dismissal]'))">
+                <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+                <div><div class="qa-title">Unfair Dismissal Checklist</div><div class="qa-sub">Eligibility & claim drafting</div></div>
+                <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+              </div>
+              <div class="quick-action" onclick="showView('admin', document.querySelector('[onclick*=admin]'))">
+                <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></div>
+                <div><div class="qa-title">Update Thresholds</div><div class="qa-sub">Edit legal figures & limits</div></div>
+                <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MATTERS ── -->
+      <div class="view" id="view-matters">
+        <div class="section-header">
+          <div>
+            <h2>Matters</h2>
+            <p>All client matters across every claim type</p>
+          </div>
+          <button class="btn btn-primary" onclick="openNewMatterModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Matter
+          </button>
+        </div>
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="search-input" placeholder="Search by client name or matter reference…" oninput="filterMatters(this.value)" />
+          </div>
+        </div>
+        <div class="matters-table">
+          <div class="table-header">
+            <div>Client</div>
+            <div>Claim Type</div>
+            <div>Assigned To</div>
+            <div>Status</div>
+            <div>Created</div>
+            <div></div>
+          </div>
+          <div id="matters-table-body">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              <h3>No matters yet</h3>
+              <p>Create your first matter to get started</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── UNFAIR DISMISSAL ── -->
+      <div class="view" id="view-unfair-dismissal">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-teal">Fair Work Act 2009 (Cth) — ss. 394–405</div>
+            <h2>Unfair Dismissal</h2>
+            <p>Eligibility checklist, threshold verification and statement of claim drafting for applications under s.394 of the Fair Work Act 2009.</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            Draft Application
+          </button>
+        </div>
+
+        <div class="claim-layout">
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>Eligibility Checklist</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Answer each item to confirm eligibility before drafting. Items marked in red may affect the viability of the claim.</p>
+
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ud-c1-yes" onclick="setCheckGeneric('ud-c1','ud',6,true)">✓</button>
+                    <button class="check-btn" id="ud-c1-no" onclick="setCheckGeneric('ud-c1','ud',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Minimum employment period met</div>
+                    <div class="check-detail">6 months (or 12 months if small business employer with fewer than 15 employees)</div>
+                    <div class="check-warning" id="ud-c1-warn">⚠ Claim may not be available — minimum employment period not satisfied.</div>
+                  </div>
+                </div>
+
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ud-c2-yes" onclick="setCheckGeneric('ud-c2','ud',6,true)">✓</button>
+                    <button class="check-btn" id="ud-c2-no" onclick="setCheckGeneric('ud-c2','ud',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Earnings below the High Income Threshold</div>
+                    <div class="check-detail">Current threshold: <strong id="hit-display">$183,000</strong> per annum (excl. compulsory super)</div>
+                    <div class="check-warning" id="ud-c2-warn">⚠ If the employee earns above the HIT and is not covered by a modern award or enterprise agreement, they are not eligible for unfair dismissal. Consider general protections.</div>
+                  </div>
+                </div>
+
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ud-c3-yes" onclick="setCheckGeneric('ud-c3','ud',6,true)">✓</button>
+                    <button class="check-btn" id="ud-c3-no" onclick="setCheckGeneric('ud-c3','ud',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Application filed within 21 days of dismissal taking effect</div>
+                    <div class="check-detail">Time limit is strict — FWC may grant extensions only in exceptional circumstances</div>
+                    <div class="check-warning" id="ud-c3-warn">⚠ Application is out of time. A compelling reason will be required to seek an extension under s.394(3).</div>
+                  </div>
+                </div>
+
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ud-c4-yes" onclick="setCheckGeneric('ud-c4','ud',6,true)">✓</button>
+                    <button class="check-btn" id="ud-c4-no" onclick="setCheckGeneric('ud-c4','ud',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Employee is not a casual without regular and systematic engagement</div>
+                    <div class="check-detail">Casual employees must demonstrate regular and systematic engagement with reasonable expectation of continued employment</div>
+                    <div class="check-warning" id="ud-c4-warn">⚠ Pure casual employees without regular/systematic engagement may not be eligible.</div>
+                  </div>
+                </div>
+
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ud-c5-yes" onclick="setCheckGeneric('ud-c5','ud',6,true)">✓</button>
+                    <button class="check-btn" id="ud-c5-no" onclick="setCheckGeneric('ud-c5','ud',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Dismissal was not a genuine redundancy</div>
+                    <div class="check-detail">If it was a genuine redundancy (role no longer required + proper consultation), the claim will be dismissed under s.385(d)</div>
+                    <div class="check-warning" id="ud-c5-warn">⚠ If this is a genuine redundancy, the UD claim will likely fail. Consider whether proper consultation occurred or redeployment was possible.</div>
+                  </div>
+                </div>
+
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ud-c6-yes" onclick="setCheckGeneric('ud-c6','ud',6,true)">✓</button>
+                    <button class="check-btn" id="ud-c6-no" onclick="setCheckGeneric('ud-c6','ud',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Not excluded by an applicable enterprise agreement dispute resolution clause</div>
+                    <div class="check-detail">Some EAs contain dispute resolution procedures that must be exhausted first</div>
+                    <div class="check-warning" id="ud-c6-warn">⚠ Check the enterprise agreement — there may be a prerequisite dispute resolution process.</div>
+                  </div>
+                </div>
+
+                <div class="checklist-status pending" id="ud-checklist-status">
+                  Complete all checklist items above to see eligibility status
+                </div>
+              </div>
+            </div>
+
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <h3>Other Breaches (Optional)</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">If filing in the Federal Court and combining with additional claims, list them here.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Award breach (s.45 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> NES breach (s.44 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Underpayment of wages</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Failure to pay entitlements on termination</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Unlawful termination (s.772 FWA)</label>
+                </div>
+                <div class="form-group" style="margin-top:10px">
+                  <label style="font-size:12px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:6px">Additional breach details</label>
+                  <textarea style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Describe any other breaches to be included in the claim…"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right panel placeholder -->
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for recent FWC and Federal Court decisions relevant to this matter.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. valid reason, procedural fairness…" />
+                  <button class="btn btn-primary" style="padding:9px 14px">Search</button>
+                </div>
+                <div style="background:var(--grey-light);border-radius:8px;padding:16px;text-align:center;font-size:13px;color:var(--text-light)">
+                  AI-powered case law research coming in Stage 2
+                </div>
+              </div>
+            </div>
+
+            <div class="claim-section" style="margin-top:0">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+                <h3>Key Thresholds</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px">
+                  <span style="color:var(--text-light)">High Income Threshold</span>
+                  <strong id="ud-hit-panel">$183,000</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px">
+                  <span style="color:var(--text-light)">Min. Employment Period (standard)</span>
+                  <strong>6 months</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px">
+                  <span style="color:var(--text-light)">Min. Employment Period (small business)</span>
+                  <strong>12 months</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px">
+                  <span style="color:var(--text-light)">Filing deadline</span>
+                  <strong>21 days</strong>
+                </div>
+                <div style="margin-top:12px;padding:10px;background:var(--teal-light);border-radius:8px;font-size:12px;color:var(--teal-dark)">
+                  Thresholds are editable in <strong>Settings & Thresholds</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── GP DISMISSAL ── -->
+      <div class="view" id="view-gp-dismissal">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-blue">Fair Work Act 2009 (Cth) — s.365</div>
+            <h2>General Protections — Involving Dismissal</h2>
+            <p>Eligibility checklist and claim drafting for adverse action applications under s.365 of the Fair Work Act 2009 where dismissal has occurred.</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            Draft Application
+          </button>
+        </div>
+        <div class="claim-layout">
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>Eligibility Checklist</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">Confirm all eligibility requirements before filing. General protections claims are broader than unfair dismissal and have no earnings threshold.</p>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpd-c1-yes" onclick="setCheckGeneric('gpd-c1','gpd',6)">✓</button>
+                    <button class="check-btn" id="gpd-c1-no" onclick="setCheckGeneric('gpd-c1','gpd',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The employee was dismissed (as defined in s.12 FWA)</div>
+                    <div class="check-detail">Includes termination by employer, forced resignation or dismissal by demotion. Use GP No Dismissal if no dismissal occurred.</div>
+                    <div class="check-warning" id="gpd-c1-warn">⚠ If no dismissal occurred, this claim must be brought under s.372 (GP Not Involving Dismissal) instead.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpd-c2-yes" onclick="setCheckGeneric('gpd-c2','gpd',6)">✓</button>
+                    <button class="check-btn" id="gpd-c2-no" onclick="setCheckGeneric('gpd-c2','gpd',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Application filed within 21 days of dismissal taking effect</div>
+                    <div class="check-detail">Time limit under s.366 — FWC may extend in exceptional circumstances only</div>
+                    <div class="check-warning" id="gpd-c2-warn">⚠ Application is out of time. Compelling reasons will be needed to seek an extension under s.366(2).</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpd-c3-yes" onclick="setCheckGeneric('gpd-c3','gpd',6)">✓</button>
+                    <button class="check-btn" id="gpd-c3-no" onclick="setCheckGeneric('gpd-c3','gpd',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">A workplace right, industrial activity or protected attribute was a reason for the dismissal</div>
+                    <div class="check-detail">E.g. making a complaint, exercising a right under an award/EBA, union membership, exercising a workplace right</div>
+                    <div class="check-warning" id="gpd-c3-warn">⚠ Must be able to identify a protected reason that was a reason (not necessarily the only reason) for the dismissal.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpd-c4-yes" onclick="setCheckGeneric('gpd-c4','gpd',6)">✓</button>
+                    <button class="check-btn" id="gpd-c4-no" onclick="setCheckGeneric('gpd-c4','gpd',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The employee is a national system employee</div>
+                    <div class="check-detail">Covered by the Fair Work Act — most private sector employees in Victoria are national system employees</div>
+                    <div class="check-warning" id="gpd-c4-warn">⚠ State public sector employees and some other categories may not be national system employees. Confirm coverage.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpd-c5-yes" onclick="setCheckGeneric('gpd-c5','gpd',6)">✓</button>
+                    <button class="check-btn" id="gpd-c5-no" onclick="setCheckGeneric('gpd-c5','gpd',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Conciliation at FWC is required before Court proceedings</div>
+                    <div class="check-detail">s.365 applications must go through FWC conciliation first. A certificate of unsuccessful conciliation is required to proceed to Court.</div>
+                    <div class="check-warning" id="gpd-c5-warn">⚠ Ensure FWC application is filed first — you cannot go directly to Federal Court without the certificate.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpd-c6-yes" onclick="setCheckGeneric('gpd-c6','gpd',6)">✓</button>
+                    <button class="check-btn" id="gpd-c6-no" onclick="setCheckGeneric('gpd-c6','gpd',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">No minimum employment period required</div>
+                    <div class="check-detail">Unlike unfair dismissal, there is no minimum employment period for general protections — even a day-one employee can bring this claim</div>
+                    <div class="check-warning" id="gpd-c6-warn"></div>
+                  </div>
+                </div>
+                <div class="checklist-status pending" id="gpd-checklist-status">Complete all checklist items above to see eligibility status</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <h3>Other Breaches (Optional)</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Additional claims to include if proceeding in the Federal Court.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Award breach (s.45 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> NES breach (s.44 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Underpayment of wages</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Unlawful termination (s.772 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Breach of employment contract</label>
+                </div>
+                <textarea style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Describe any additional breaches…"></textarea>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for recent decisions on general protections and adverse action.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. adverse action, workplace right…" id="gpd-research-input"/>
+                  <button class="btn btn-primary" style="padding:9px 14px" onclick="runResearch('gpd-research-input','gpd-research-result')">Search</button>
+                </div>
+                <div id="gpd-research-result" class="research-placeholder">Enter a topic above — AI research requires an API key (Stage 3)</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+                <h3>Key Thresholds</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">No earnings threshold</span><strong style="color:var(--success)">Not applicable</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">No minimum employment period</span><strong style="color:var(--success)">Not applicable</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Filing deadline (FWC)</span><strong>21 days</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:var(--text-light)">Court filing after certificate</span><strong>6 years (limitation)</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── GP NO DISMISSAL ── -->
+      <div class="view" id="view-gp-no-dismissal">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-blue">Fair Work Act 2009 (Cth) — s.372</div>
+            <h2>General Protections — Not Involving Dismissal</h2>
+            <p>Eligibility checklist and claim drafting for adverse action applications under s.372 where no dismissal has occurred.</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            Draft Application
+          </button>
+        </div>
+        <div class="claim-layout">
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>Eligibility Checklist</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;">For adverse action claims where the employee remains employed. Filed directly in the Federal Court — no FWC conciliation required.</p>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpnd-c1-yes" onclick="setCheckGeneric('gpnd-c1','gpnd',5)">✓</button>
+                    <button class="check-btn" id="gpnd-c1-no" onclick="setCheckGeneric('gpnd-c1','gpnd',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">No dismissal has occurred — the employee is still employed</div>
+                    <div class="check-detail">If the employee was dismissed, use GP Involving Dismissal (s.365). This provision covers demotion, reduction in hours, adverse changes to role, etc.</div>
+                    <div class="check-warning" id="gpnd-c1-warn">⚠ If dismissal has occurred, this claim must be brought under s.365 instead.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpnd-c2-yes" onclick="setCheckGeneric('gpnd-c2','gpnd',5)">✓</button>
+                    <button class="check-btn" id="gpnd-c2-no" onclick="setCheckGeneric('gpnd-c2','gpnd',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Adverse action has been taken against the employee</div>
+                    <div class="check-detail">E.g. injury to employment, alteration of position to the employee's prejudice, discrimination between employees</div>
+                    <div class="check-warning" id="gpnd-c2-warn">⚠ Must identify a specific adverse action — not all unfair workplace treatment constitutes adverse action under the Act.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpnd-c3-yes" onclick="setCheckGeneric('gpnd-c3','gpnd',5)">✓</button>
+                    <button class="check-btn" id="gpnd-c3-no" onclick="setCheckGeneric('gpnd-c3','gpnd',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The adverse action was taken because of a protected reason</div>
+                    <div class="check-detail">Protected reasons include: exercising a workplace right, union membership/activity, making a complaint or inquiry, protected industrial action</div>
+                    <div class="check-warning" id="gpnd-c3-warn">⚠ Identify the specific protected reason. The reverse onus provisions (s.361) mean the employer must disprove the connection.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpnd-c4-yes" onclick="setCheckGeneric('gpnd-c4','gpnd',5)">✓</button>
+                    <button class="check-btn" id="gpnd-c4-no" onclick="setCheckGeneric('gpnd-c4','gpnd',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Filed directly in Federal Court (no FWC conciliation required)</div>
+                    <div class="check-detail">Unlike s.365 claims, s.372 applications go directly to the Federal Court — there is no FWC step</div>
+                    <div class="check-warning" id="gpnd-c4-warn">⚠ Confirm the correct forum — do not file in FWC for a s.372 matter.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="gpnd-c5-yes" onclick="setCheckGeneric('gpnd-c5','gpnd',5)">✓</button>
+                    <button class="check-btn" id="gpnd-c5-no" onclick="setCheckGeneric('gpnd-c5','gpnd',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Consider whether injunctive relief is required urgently</div>
+                    <div class="check-detail">If the employer is continuing to take adverse action, an interlocutory injunction may be sought to stop further harm while proceedings continue</div>
+                    <div class="check-warning" id="gpnd-c5-warn">⚠ If ongoing adverse action, consider urgency of injunctive relief — take instructions promptly.</div>
+                  </div>
+                </div>
+                <div class="checklist-status pending" id="gpnd-checklist-status">Complete all checklist items above to see eligibility status</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <h3>Other Breaches (Optional)</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Additional claims to include in Federal Court proceedings.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Award breach (s.45 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> NES breach (s.44 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Underpayment of wages</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Breach of employment contract</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Discrimination (SDA or EOA)</label>
+                </div>
+                <textarea style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Describe any additional breaches…"></textarea>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for decisions on adverse action, reverse onus and injunctive relief.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. reverse onus, injunction…" id="gpnd-research-input"/>
+                  <button class="btn btn-primary" style="padding:9px 14px" onclick="runResearch('gpnd-research-input','gpnd-research-result')">Search</button>
+                </div>
+                <div id="gpnd-research-result" class="research-placeholder">Enter a topic above — AI research requires an API key (Stage 3)</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+                <h3>Key Points</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Forum</span><strong>Federal Court directly</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">FWC conciliation required?</span><strong style="color:var(--success)">No</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Reverse onus on employer</span><strong style="color:var(--teal)">Yes — s.361</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:var(--text-light)">Limitation period</span><strong>6 years</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── UNDERPAYMENT ── -->
+      <div class="view" id="view-underpayment">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-green">Fair Work Act 2009 (Cth) — s.45 / NES</div>
+            <h2>Underpayment Calculator</h2>
+            <p>Select the applicable award or EBA, enter the employee's classification and hours worked to calculate any underpayment. AI-powered rate lookup available once API key is added.</p>
+          </div>
+        </div>
+
+        <div class="claim-layout">
+          <div>
+            <!-- Step 1: Award/Agreement -->
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+                <h3>Step 1 — Award or Enterprise Agreement</h3>
+              </div>
+              <div class="claim-section-body">
+                <div class="form-row" style="margin-bottom:14px">
+                  <div class="form-group" style="margin-bottom:0">
+                    <label style="font-size:12px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:6px">Instrument Type</label>
+                    <select id="up-instrument-type" onchange="toggleAwardEBA()" style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+                      <option value="">Select type…</option>
+                      <option value="award">Modern Award</option>
+                      <option value="eba">Enterprise Agreement (EBA)</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0">
+                    <label style="font-size:12px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:6px">Award / EBA Name</label>
+                    <input id="up-award-name" list="award-list" placeholder="e.g. General Retail Industry Award 2020" style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                    <datalist id="award-list">
+                      <option value="General Retail Industry Award 2020">
+                      <option value="Clerks — Private Sector Award 2020">
+                      <option value="Fast Food Industry Award 2020">
+                      <option value="Restaurant Industry Award 2020">
+                      <option value="Hospitality Industry (General) Award 2020">
+                      <option value="Health Professionals and Support Services Award 2020">
+                      <option value="Social, Community, Home Care and Disability Services Industry Award 2010">
+                      <option value="Building and Construction General On-site Award 2020">
+                      <option value="Manufacturing and Associated Industries and Occupations Award 2020">
+                      <option value="Professional Employees Award 2020">
+                      <option value="Security Services Industry Award 2020">
+                      <option value="Transport (Road Passenger) Award 2020">
+                    </datalist>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label style="font-size:12px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:6px">Employee Classification</label>
+                  <input id="up-classification" placeholder="e.g. Retail Employee Level 3, Grade 2 Sales Assistant" style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Hours -->
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+                <h3>Step 2 — Hours Worked</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Enter the hours worked in each category. Add as many pay periods as needed.</p>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px">Ordinary Hours</label>
+                    <input id="up-ordinary" type="number" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px">Overtime Hours</label>
+                    <input id="up-overtime" type="number" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px">Saturday Hours</label>
+                    <input id="up-saturday" type="number" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px">Sunday Hours</label>
+                    <input id="up-sunday" type="number" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px">Public Holiday Hrs</label>
+                    <input id="up-pubhol" type="number" min="0" placeholder="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:5px">Amount Paid ($)</label>
+                    <input id="up-paid" type="number" min="0" placeholder="0.00" style="width:100%;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label style="font-size:12px;font-weight:600;color:var(--text-light);letter-spacing:0.6px;text-transform:uppercase;display:block;margin-bottom:6px">Pay Period</label>
+                  <div style="display:flex;gap:10px">
+                    <input type="date" id="up-from" style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                    <span style="line-height:38px;color:var(--text-light)">to</span>
+                    <input type="date" id="up-to" style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Calculate -->
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                <h3>Step 3 — Calculate</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="background:var(--blue-light);border:1px solid #B3E5F5;border-radius:10px;padding:14px 16px;font-size:13px;color:#1A6980;margin-bottom:16px">
+                  <strong>AI-powered calculation (Stage 3):</strong> Once an API key is added, the AI will search the Fair Work Commission website for current award rates, show you the source link for verification, then calculate the underpayment automatically.
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px" onclick="runCalculation()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  Run Underpayment Calculation
+                </button>
+                <div id="up-result" style="margin-top:16px;display:none">
+                  <div style="background:var(--grey-light);border-radius:10px;padding:16px">
+                    <div style="font-size:12px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-light);margin-bottom:10px">Calculation Summary</div>
+                    <div id="up-result-body"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other Breaches -->
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <h3>Other Breaches (Optional)</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Additional claims to include in Federal Court proceedings.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> General protections (adverse action)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> NES breach (s.44 FWA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Failure to keep employment records</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Failure to provide payslips</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Breach of employment contract</label>
+                </div>
+                <textarea style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Describe any additional breaches…"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for recent decisions on underpayment, award coverage and penalties.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. award coverage, penalties…" id="up-research-input"/>
+                  <button class="btn btn-primary" style="padding:9px 14px" onclick="runResearch('up-research-input','up-research-result')">Search</button>
+                </div>
+                <div id="up-research-result" class="research-placeholder">Enter a topic above — AI research requires an API key (Stage 3)</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+                <h3>Penalty Rates Reference</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:12px;color:var(--text-light);margin-bottom:10px">Typical penalty rate multipliers — varies by award. Confirm against the specific instrument.</p>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Ordinary rate</span><strong>×1.00</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Overtime (first 2 hrs)</span><strong>×1.50</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Overtime (after 2 hrs)</span><strong>×2.00</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Saturday</span><strong>×1.25 – ×1.50</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Sunday</span><strong>×1.75 – ×2.00</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px"><span style="color:var(--text-light)">Public Holiday</span><strong>×2.25 – ×2.50</strong></div>
+                <div style="margin-top:12px;padding:10px;background:var(--teal-light);border-radius:8px;font-size:12px;color:var(--teal-dark)">
+                  Always verify rates against the actual award — AI lookup will confirm exact figures in Stage 3
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DISCRIMINATION ── -->
+      <div class="view" id="view-discrimination">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-amber">Equal Opportunity Act 2010 (Vic) — VCAT</div>
+            <h2>Discrimination Against Employee</h2>
+            <p>Eligibility checklist and claim drafting for discrimination complaints under the Equal Opportunity Act 2010 (Vic) to VCAT.</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            Draft Application
+          </button>
+        </div>
+        <div class="claim-layout">
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>Eligibility Checklist</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Confirm the complaint relates to a protected attribute and prohibited conduct under the EOA 2010.</p>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="disc-c1-yes" onclick="setCheckGeneric('disc-c1','disc',6)">✓</button>
+                    <button class="check-btn" id="disc-c1-no" onclick="setCheckGeneric('disc-c1','disc',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The conduct relates to a protected attribute under the EOA 2010</div>
+                    <div class="check-detail">Protected attributes include: age, breastfeeding, disability, employment activity, gender identity, industrial activity, lawful sexual activity, marital/relationship status, parental/carer status, physical features, political belief, pregnancy, race, religious belief, sex, sexual orientation, personal association</div>
+                    <div class="check-warning" id="disc-c1-warn">⚠ Confirm the attribute is specifically protected under the EOA 2010 (Vic) — not all characteristics are protected.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="disc-c2-yes" onclick="setCheckGeneric('disc-c2','disc',6)">✓</button>
+                    <button class="check-btn" id="disc-c2-no" onclick="setCheckGeneric('disc-c2','disc',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The discrimination occurred in the area of employment (s.16 EOA)</div>
+                    <div class="check-detail">Includes: offers of employment, terms and conditions, opportunities for promotion/transfer/training, dismissal or other detriment</div>
+                    <div class="check-warning" id="disc-c2-warn">⚠ Must confirm the discriminatory conduct occurred in the specific area of employment under s.16.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="disc-c3-yes" onclick="setCheckGeneric('disc-c3','disc',6)">✓</button>
+                    <button class="check-btn" id="disc-c3-no" onclick="setCheckGeneric('disc-c3','disc',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Conduct constitutes direct or indirect discrimination</div>
+                    <div class="check-detail">Direct: treated less favourably because of an attribute. Indirect: an unreasonable requirement, condition or practice that disadvantages persons with an attribute.</div>
+                    <div class="check-warning" id="disc-c3-warn">⚠ Identify whether direct or indirect — the elements and defences differ. Indirect discrimination requires the requirement to be unreasonable.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="disc-c4-yes" onclick="setCheckGeneric('disc-c4','disc',6)">✓</button>
+                    <button class="check-btn" id="disc-c4-no" onclick="setCheckGeneric('disc-c4','disc',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Complaint lodged with the Victorian Equal Opportunity & Human Rights Commission first</div>
+                    <div class="check-detail">Must first lodge with VEOHRC for conciliation. If conciliation fails, VEOHRC issues a certificate to proceed to VCAT.</div>
+                    <div class="check-warning" id="disc-c4-warn">⚠ VEOHRC complaint and conciliation certificate is required before VCAT proceedings can commence — ensure this step is completed.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="disc-c5-yes" onclick="setCheckGeneric('disc-c5','disc',6)">✓</button>
+                    <button class="check-btn" id="disc-c5-no" onclick="setCheckGeneric('disc-c5','disc',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Complaint lodged within 2 years of the alleged discrimination</div>
+                    <div class="check-detail">The limitation period under the EOA 2010 is 2 years from the date of the alleged contravention</div>
+                    <div class="check-warning" id="disc-c5-warn">⚠ Claim may be out of time — VEOHRC has discretion to accept out-of-time complaints but it is not guaranteed.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="disc-c6-yes" onclick="setCheckGeneric('disc-c6','disc',6)">✓</button>
+                    <button class="check-btn" id="disc-c6-no" onclick="setCheckGeneric('disc-c6','disc',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Consider whether vicarious liability applies to the employer</div>
+                    <div class="check-detail">Under s.109 EOA, employers are vicariously liable for discriminatory conduct of employees and agents unless all reasonable steps were taken to prevent it</div>
+                    <div class="check-warning" id="disc-c6-warn">⚠ Assess whether employer took reasonable steps to prevent the conduct — this affects the strength of the vicarious liability argument.</div>
+                  </div>
+                </div>
+                <div class="checklist-status pending" id="disc-checklist-status">Complete all checklist items above to see eligibility status</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for VCAT decisions on discrimination and EOA.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. indirect discrimination, disability…" id="disc-research-input"/>
+                  <button class="btn btn-primary" style="padding:9px 14px" onclick="runResearch('disc-research-input','disc-research-result')">Search</button>
+                </div>
+                <div id="disc-research-result" class="research-placeholder">Enter a topic above — AI research requires an API key (Stage 3)</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></div>
+                <h3>Key Points</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Forum</span><strong>VCAT (after VEOHRC)</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Limitation period</span><strong>2 years</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">VEOHRC conciliation first</span><strong style="color:var(--teal)">Required</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:var(--text-light)">Legislation</span><strong>EOA 2010 (Vic)</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REASONABLE ADJUSTMENTS ── -->
+      <div class="view" id="view-reasonable-adjustments">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-amber">Equal Opportunity Act 2010 (Vic) — s.20</div>
+            <h2>Failure to Make Reasonable Adjustments</h2>
+            <p>Eligibility checklist and claim drafting for failure to make reasonable adjustments for an employee with a disability or attribute under the EOA 2010 (Vic).</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            Draft Application
+          </button>
+        </div>
+        <div class="claim-layout">
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>Eligibility Checklist</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Confirm the employee requested adjustments and the employer failed to make them without unjustifiable hardship.</p>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ra-c1-yes" onclick="setCheckGeneric('ra-c1','ra',5)">✓</button>
+                    <button class="check-btn" id="ra-c1-no" onclick="setCheckGeneric('ra-c1','ra',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The employee has a disability or other attribute requiring adjustments</div>
+                    <div class="check-detail">Under s.20 EOA, an employer must make reasonable adjustments for an employee with a disability unless it would impose unjustifiable hardship</div>
+                    <div class="check-warning" id="ra-c1-warn">⚠ Must establish the attribute (usually disability) that necessitates the adjustment.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ra-c2-yes" onclick="setCheckGeneric('ra-c2','ra',5)">✓</button>
+                    <button class="check-btn" id="ra-c2-no" onclick="setCheckGeneric('ra-c2','ra',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The employee requested reasonable adjustments from the employer</div>
+                    <div class="check-detail">The duty to adjust is typically triggered by a request or when the employer is aware of the need — document the request and employer's response</div>
+                    <div class="check-warning" id="ra-c2-warn">⚠ If no request was made, consider whether the employer had actual or constructive knowledge of the need for adjustment.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ra-c3-yes" onclick="setCheckGeneric('ra-c3','ra',5)">✓</button>
+                    <button class="check-btn" id="ra-c3-no" onclick="setCheckGeneric('ra-c3','ra',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The employer failed or refused to make the adjustments</div>
+                    <div class="check-detail">Failure can include outright refusal, unreasonable delay, inadequate adjustments, or dismissal rather than adjustment</div>
+                    <div class="check-warning" id="ra-c3-warn">⚠ Document the specific adjustments sought and the employer's response in detail.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ra-c4-yes" onclick="setCheckGeneric('ra-c4','ra',5)">✓</button>
+                    <button class="check-btn" id="ra-c4-no" onclick="setCheckGeneric('ra-c4','ra',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The adjustments requested were reasonable (not unjustifiable hardship)</div>
+                    <div class="check-detail">Unjustifiable hardship is assessed by considering: cost, nature of the benefit, financial circumstances of the employer and other relevant circumstances</div>
+                    <div class="check-warning" id="ra-c4-warn">⚠ Employer may raise unjustifiable hardship as a defence — assess the strength of that argument on the facts.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="ra-c5-yes" onclick="setCheckGeneric('ra-c5','ra',5)">✓</button>
+                    <button class="check-btn" id="ra-c5-no" onclick="setCheckGeneric('ra-c5','ra',5,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">VEOHRC complaint lodged within 2 years of the contravention</div>
+                    <div class="check-detail">Same process as discrimination complaints — VEOHRC conciliation first, then VCAT if unresolved</div>
+                    <div class="check-warning" id="ra-c5-warn">⚠ Check the date of contravention — the 2 year limitation period applies.</div>
+                  </div>
+                </div>
+                <div class="checklist-status pending" id="ra-checklist-status">Complete all checklist items above to see eligibility status</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for decisions on reasonable adjustments and unjustifiable hardship.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. unjustifiable hardship, disability…" id="ra-research-input"/>
+                  <button class="btn btn-primary" style="padding:9px 14px" onclick="runResearch('ra-research-input','ra-research-result')">Search</button>
+                </div>
+                <div id="ra-research-result" class="research-placeholder">Enter a topic above — AI research requires an API key (Stage 3)</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></div>
+                <h3>Key Points</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Forum</span><strong>VCAT (after VEOHRC)</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Limitation period</span><strong>2 years</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Key defence</span><strong>Unjustifiable hardship</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:var(--text-light)">Legislation</span><strong>EOA 2010 s.20 (Vic)</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SEXUAL HARASSMENT ── -->
+      <div class="view" id="view-sexual-harassment">
+        <div class="claim-page-header">
+          <div>
+            <div class="claim-tag badge-grey">Sex Discrimination Act 1984 (Cth) — ss.28A–28L</div>
+            <h2>Sexual Harassment</h2>
+            <p>Eligibility checklist and claim drafting for sexual harassment complaints under the Sex Discrimination Act 1984 (Cth) and the positive duty to eliminate sexual harassment.</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            Draft Application
+          </button>
+        </div>
+        <div class="claim-layout">
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>Eligibility Checklist</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Confirm the conduct constitutes sexual harassment under the SDA and the appropriate forum for the claim.</p>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="sh-c1-yes" onclick="setCheckGeneric('sh-c1','sh',6)">✓</button>
+                    <button class="check-btn" id="sh-c1-no" onclick="setCheckGeneric('sh-c1','sh',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The conduct constitutes sexual harassment under s.28A SDA</div>
+                    <div class="check-detail">An unwelcome sexual advance, unwelcome request for sexual favours, or other unwelcome conduct of a sexual nature — where a reasonable person would have anticipated the possibility of offence, humiliation or intimidation</div>
+                    <div class="check-warning" id="sh-c1-warn">⚠ Both elements must be present: the conduct must be sexual in nature AND unwelcome, assessed against the reasonable person standard.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="sh-c2-yes" onclick="setCheckGeneric('sh-c2','sh',6)">✓</button>
+                    <button class="check-btn" id="sh-c2-no" onclick="setCheckGeneric('sh-c2','sh',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">The harassment occurred in connection with employment (s.28B SDA)</div>
+                    <div class="check-detail">Includes conduct by employer, co-worker, or third party (e.g. customer) where employer is vicariously liable — must be in connection with work</div>
+                    <div class="check-warning" id="sh-c2-warn">⚠ Confirm the nexus between the conduct and the employment relationship — conduct outside work may not be covered unless connected to employment.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="sh-c3-yes" onclick="setCheckGeneric('sh-c3','sh',6)">✓</button>
+                    <button class="check-btn" id="sh-c3-no" onclick="setCheckGeneric('sh-c3','sh',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Consider employer vicarious liability and positive duty</div>
+                    <div class="check-detail">Employers are vicariously liable unless all reasonable steps were taken to prevent the harassment. Since 2022, employers also have a positive duty to eliminate sexual harassment (s.47C SDA).</div>
+                    <div class="check-warning" id="sh-c3-warn">⚠ Assess what steps the employer had in place — policies, training, complaint procedures. Absence of these strengthens vicarious liability.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="sh-c4-yes" onclick="setCheckGeneric('sh-c4','sh',6)">✓</button>
+                    <button class="check-btn" id="sh-c4-no" onclick="setCheckGeneric('sh-c4','sh',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Complaint lodged with the Australian Human Rights Commission first</div>
+                    <div class="check-detail">Must first lodge with AHRC for conciliation. If terminated, the complainant receives a termination notice and may then proceed to the Federal Court.</div>
+                    <div class="check-warning" id="sh-c4-warn">⚠ AHRC complaint and termination notice is required before Federal Court proceedings — ensure this step is completed.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="sh-c5-yes" onclick="setCheckGeneric('sh-c5','sh',6)">✓</button>
+                    <button class="check-btn" id="sh-c5-no" onclick="setCheckGeneric('sh-c5','sh',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">AHRC complaint lodged within 2 years of the alleged harassment</div>
+                    <div class="check-detail">The AHRC President may terminate a complaint that is out of time. AHRC has discretion to accept out-of-time complaints in some circumstances.</div>
+                    <div class="check-warning" id="sh-c5-warn">⚠ Complaint may be out of time — assess whether there are grounds to seek an extension and advise client of risk.</div>
+                  </div>
+                </div>
+                <div class="checklist-item">
+                  <div class="check-control">
+                    <button class="check-btn" id="sh-c6-yes" onclick="setCheckGeneric('sh-c6','sh',6)">✓</button>
+                    <button class="check-btn" id="sh-c6-no" onclick="setCheckGeneric('sh-c6','sh',6,false)">✗</button>
+                  </div>
+                  <div class="check-content">
+                    <div class="check-label">Consider whether FWC stop bullying/harassment order is also appropriate</div>
+                    <div class="check-detail">If the employee is still employed and harassment is ongoing, a FWC application to stop sexual harassment in connection with work (s.527C FWA) may be available in addition to or instead of the SDA complaint</div>
+                    <div class="check-warning" id="sh-c6-warn">⚠ If still employed, consider urgency of FWC stop order as a faster interim remedy alongside the SDA complaint.</div>
+                  </div>
+                </div>
+                <div class="checklist-status pending" id="sh-checklist-status">Complete all checklist items above to see eligibility status</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <h3>Other Breaches (Optional)</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Additional claims to include in Federal Court proceedings.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> General protections (adverse action)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Discrimination on the basis of sex (SDA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Victimisation (s.94 SDA)</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Breach of employment contract</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Unfair dismissal (if dismissed following complaint)</label>
+                </div>
+                <textarea style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Describe any additional breaches…"></textarea>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <h3>Case Law Research</h3>
+              </div>
+              <div class="claim-section-body">
+                <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for Federal Court decisions on sexual harassment and positive duty.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. vicarious liability, positive duty…" id="sh-research-input"/>
+                  <button class="btn btn-primary" style="padding:9px 14px" onclick="runResearch('sh-research-input','sh-research-result')">Search</button>
+                </div>
+                <div id="sh-research-result" class="research-placeholder">Enter a topic above — AI research requires an API key (Stage 3)</div>
+              </div>
+            </div>
+            <div class="claim-section">
+              <div class="claim-section-header">
+                <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg></div>
+                <h3>Key Points</h3>
+              </div>
+              <div class="claim-section-body">
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Forum</span><strong>Federal Court / FCFCOA</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">AHRC conciliation first</span><strong style="color:var(--teal)">Required</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">AHRC limitation period</span><strong>2 years</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Positive duty since</span><strong>2022</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:var(--text-light)">Legislation</span><strong>SDA 1984 (Cth)</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ADMIN / SETTINGS ── -->
+      <div class="view" id="view-admin">
+        <div class="section-header">
+          <div>
+            <h2>Settings & Thresholds</h2>
+            <p>Edit legal thresholds, checklist items and filing deadlines. Changes apply immediately across the app.</p>
+          </div>
+        </div>
+
+        <div class="admin-grid">
+          <div class="admin-card">
+            <div class="admin-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <h3>Financial Thresholds</h3>
+            <p>High income threshold, compensation caps and penalty rates</p>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <h3>Time Limits</h3>
+            <p>Filing deadlines for each claim type</p>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <h3>Checklist Items</h3>
+            <p>Add, remove or edit checklist items per claim type</p>
+          </div>
+        </div>
+
+        <div class="claim-section">
+          <div class="claim-section-header">
+            <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <h3>Financial Thresholds — Edit directly below</h3>
+          </div>
+          <div class="claim-section-body">
+            <div class="threshold-list">
+
+              <div class="threshold-item">
+                <div>
+                  <div class="threshold-label">High Income Threshold (Fair Work Act)</div>
+                  <div class="threshold-sub">Applies to unfair dismissal eligibility. Updated 1 July each year.</div>
+                </div>
+                <div class="threshold-edit">
+                  <input class="threshold-input" id="thresh-hit" value="$183,000" onchange="saveThreshold('hit', this.value)" />
+                  <span class="save-indicator" id="thresh-hit-saved">✓ Saved</span>
+                </div>
+              </div>
+
+              <div class="threshold-item">
+                <div>
+                  <div class="threshold-label">Unfair Dismissal Compensation Cap</div>
+                  <div class="threshold-sub">Maximum compensation is the lesser of 26 weeks' pay or half the HIT.</div>
+                </div>
+                <div class="threshold-edit">
+                  <input class="threshold-input" id="thresh-comp-cap" value="$91,500" onchange="saveThreshold('comp-cap', this.value)" />
+                  <span class="save-indicator" id="thresh-comp-cap-saved">✓ Saved</span>
+                </div>
+              </div>
+
+              <div class="threshold-item">
+                <div>
+                  <div class="threshold-label">Small Business Employee Threshold</div>
+                  <div class="threshold-sub">Employer with fewer than this many employees is a "small business employer".</div>
+                </div>
+                <div class="threshold-edit">
+                  <input class="threshold-input" id="thresh-sbe" value="15 employees" onchange="saveThreshold('sbe', this.value)" />
+                  <span class="save-indicator" id="thresh-sbe-saved">✓ Saved</span>
+                </div>
+              </div>
+
+              <div class="threshold-item">
+                <div>
+                  <div class="threshold-label">National Minimum Wage</div>
+                  <div class="threshold-sub">Current NMW per hour. Updated annually after Fair Work Commission review.</div>
+                </div>
+                <div class="threshold-edit">
+                  <input class="threshold-input" id="thresh-nmw" value="$24.10/hr" onchange="saveThreshold('nmw', this.value)" />
+                  <span class="save-indicator" id="thresh-nmw-saved">✓ Saved</span>
+                </div>
+              </div>
+
+              <div class="threshold-item">
+                <div>
+                  <div class="threshold-label">General Protections Filing Deadline</div>
+                  <div class="threshold-sub">Days from dismissal to file under s.365 (dismissal) or s.372 (no dismissal).</div>
+                </div>
+                <div class="threshold-edit">
+                  <input class="threshold-input" id="thresh-gp-deadline" value="21 days" onchange="saveThreshold('gp-deadline', this.value)" />
+                  <span class="save-indicator" id="thresh-gp-deadline-saved">✓ Saved</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS ── -->
+      <div class="view" id="view-users">
+        <div class="section-header">
+          <div>
+            <h2>Users & Roles</h2>
+            <p>Manage who has access to the KWL Assistant and their permission levels</p>
+          </div>
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Invite User
+          </button>
+        </div>
+        <div class="users-grid" id="users-grid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </main>
+</div><!-- /app-shell -->
+
+<!-- ══════════════ NEW MATTER MODAL ══════════════ -->
+<div class="modal-overlay" id="new-matter-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New Matter</h3>
+      <button class="modal-close" onclick="closeModal('new-matter-modal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Client First Name</label>
+          <input type="text" id="m-firstname" placeholder="e.g. Sarah" />
+        </div>
+        <div class="form-group">
+          <label>Client Last Name</label>
+          <input type="text" id="m-lastname" placeholder="e.g. Thompson" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Matter Reference</label>
+          <input type="text" id="m-ref" placeholder="e.g. KWL-2025-001" />
+        </div>
+        <div class="form-group">
+          <label>Claim Type</label>
+          <select id="m-claimtype">
+            <option value="">Select claim type…</option>
+            <option>Unfair Dismissal</option>
+            <option>General Protections (Dismissal)</option>
+            <option>General Protections (No Dismissal)</option>
+            <option>Underpayment</option>
+            <option>Discrimination</option>
+            <option>Failure to Make Reasonable Adjustments</option>
+            <option>Sexual Harassment</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assigned Lawyer</label>
+          <select id="m-lawyer">
+            <option>Jane Kelly</option>
+            <option>Mark Chen</option>
+            <option>Priya Sharma</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="m-status">
+            <option>Active</option>
+            <option>On Hold</option>
+            <option>Closed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="m-notes" placeholder="Brief summary of the matter…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('new-matter-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createMatter()">Create Matter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const USERS = [
+  { email: 'admin@kwlawyers.com.au', password: 'admin123', name: 'Jane Kelly', role: 'Admin', initials: 'JK' },
+  { email: 'lawyer@kwlawyers.com.au', password: 'lawyer123', name: 'Mark Chen', role: 'Lawyer', initials: 'MC' },
+  { email: 'staff@kwlawyers.com.au', password: 'staff123', name: 'Priya Sharma', role: 'Support Staff', initials: 'PS' },
+];
+
+let currentUser = null;
+let matters = [];
+let checkStates = {};
+let thresholds = { hit: '$183,000', 'comp-cap': '$91,500', sbe: '15 employees', nmw: '$24.10/hr', 'gp-deadline': '21 days' };
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const user = USERS.find(u => u.email === email && u.password === password);
+  if (!user) {
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+  document.getElementById('sb-avatar').textContent = user.initials;
+  document.getElementById('sb-name').textContent = user.name;
+  document.getElementById('sb-role').textContent = user.role;
+  if (user.role === 'Admin') document.getElementById('admin-nav').style.display = 'block';
+  setDate();
+  renderUsers();
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════
+// AUTO-INIT (no login required)
+// ═══════════════════════════════════════════
+currentUser = { name: 'Jane Kelly', role: 'Admin', initials: 'JK' };
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('sb-avatar').textContent = 'JK';
+  document.getElementById('sb-name').textContent = 'Jane Kelly';
+  document.getElementById('sb-role').textContent = 'Administrator';
+  document.getElementById('admin-nav').style.display = 'block';
+  setDate();
+  renderUsers();
+});
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+const viewTitles = {
+  'dashboard': 'Dashboard',
+  'matters': 'Matters',
+  'unfair-dismissal': 'Unfair Dismissal',
+  'gp-dismissal': 'General Protections — Dismissal',
+  'gp-no-dismissal': 'General Protections — No Dismissal',
+  'underpayment': 'Underpayment Calculator',
+  'discrimination': 'Discrimination',
+  'reasonable-adjustments': 'Reasonable Adjustments',
+  'sexual-harassment': 'Sexual Harassment',
+  'admin': 'Settings & Thresholds',
+  'users': 'Users & Roles',
+};
+
+function showView(name, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = viewTitles[name] || name;
+}
+
+// ═══════════════════════════════════════════
+// MATTERS
+// ═══════════════════════════════════════════
+function openNewMatterModal() {
+  document.getElementById('new-matter-modal').classList.add('open');
+  // Auto-generate ref
+  const n = String(matters.length + 1).padStart(3, '0');
+  const yr = new Date().getFullYear();
+  document.getElementById('m-ref').value = `KWL-${yr}-${n}`;
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function createMatter() {
+  const fn = document.getElementById('m-firstname').value.trim();
+  const ln = document.getElementById('m-lastname').value.trim();
+  const ref = document.getElementById('m-ref').value.trim();
+  const claimType = document.getElementById('m-claimtype').value;
+  const lawyer = document.getElementById('m-lawyer').value;
+  const status = document.getElementById('m-status').value;
+  const notes = document.getElementById('m-notes').value.trim();
+  if (!fn || !ln || !claimType) { alert('Please fill in client name and claim type.'); return; }
+  const matter = {
+    id: Date.now(),
+    client: fn + ' ' + ln,
+    ref: ref || `KWL-${Date.now()}`,
+    claimType,
+    lawyer,
+    status,
+    notes,
+    created: new Date().toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric' })
+  };
+  matters.unshift(matter);
+  closeModal('new-matter-modal');
+  renderMatters();
+  updateStats();
+  document.getElementById('m-firstname').value = '';
+  document.getElementById('m-lastname').value = '';
+  document.getElementById('m-notes').value = '';
+}
+
+function renderMatters(filter = '') {
+  const body = document.getElementById('matters-table-body');
+  const list = filter ? matters.filter(m => m.client.toLowerCase().includes(filter.toLowerCase()) || m.ref.toLowerCase().includes(filter.toLowerCase())) : matters;
+  if (!list.length) {
+    body.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><h3>No matters found</h3><p>${filter ? 'Try a different search term' : 'Create your first matter to get started'}</p></div>`;
+    return;
+  }
+  const statusBadge = s => ({ Active: 'badge-teal', 'On Hold': 'badge-amber', Closed: 'badge-grey' }[s] || 'badge-grey');
+  body.innerHTML = list.map(m => `
+    <div class="table-row">
+      <div><div class="client-name">${m.client}</div><div class="matter-ref">${m.ref}</div></div>
+      <div class="cell"><span class="matter-badge badge-blue" style="font-size:11px">${m.claimType}</span></div>
+      <div class="cell">${m.lawyer}</div>
+      <div class="cell"><span class="matter-badge ${statusBadge(m.status)}">${m.status}</span></div>
+      <div class="cell">${m.created}</div>
+      <div class="action-btns">
+        <button class="icon-btn" title="Open matter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button class="icon-btn" title="Delete" onclick="deleteMatter(${m.id});event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+      </div>
+    </div>`).join('');
+
+  // Recent matters on dashboard
+  const recent = matters.slice(0, 4);
+  const rDiv = document.getElementById('recent-matters-list');
+  if (!recent.length) {
+    rDiv.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px;">No matters yet. Create your first matter to get started.</div>`;
+  } else {
+    rDiv.innerHTML = recent.map(m => `<div class="recent-matter"><div class="matter-info"><div class="matter-name">${m.client}</div><div class="matter-type">${m.ref} · ${m.claimType}</div></div><span class="matter-badge ${statusBadge(m.status)}">${m.status}</span></div>`).join('');
+  }
+}
+
+function deleteMatter(id) {
+  if (!confirm('Delete this matter?')) return;
+  matters = matters.filter(m => m.id !== id);
+  renderMatters();
+  updateStats();
+}
+
+function filterMatters(val) { renderMatters(val); }
+
+function updateStats() {
+  document.getElementById('stat-matters').textContent = matters.length;
+  document.getElementById('stat-ud').textContent = matters.filter(m => m.claimType === 'Unfair Dismissal').length;
+  document.getElementById('stat-up').textContent = matters.filter(m => m.claimType === 'Underpayment').length;
+  document.getElementById('stat-gp').textContent = matters.filter(m => m.claimType.startsWith('General Protections')).length;
+  document.getElementById('matters-count').textContent = matters.length;
+}
+
+// ═══════════════════════════════════════════
+// CHECKLIST
+// ═══════════════════════════════════════════
+function setCheck(id, val) {
+  checkStates[id] = val;
+  const yBtn = document.getElementById(id + '-yes');
+  const nBtn = document.getElementById(id + '-no');
+  const warn = document.getElementById(id + '-warn');
+  yBtn.className = 'check-btn' + (val ? ' yes' : '');
+  nBtn.className = 'check-btn' + (!val ? ' no' : '');
+  if (warn) warn.className = 'check-warning' + (!val ? ' show' : '');
+  updateUDChecklistStatus();
+}
+
+function updateUDChecklistStatus() {
+  const keys = ['ud-c1','ud-c2','ud-c3','ud-c4','ud-c5','ud-c6'];
+  const answered = keys.filter(k => checkStates[k] !== undefined);
+  const failed = keys.filter(k => checkStates[k] === false);
+  const el = document.getElementById('ud-checklist-status');
+  if (answered.length < keys.length) {
+    el.className = 'checklist-status pending';
+    el.innerHTML = `${answered.length} of ${keys.length} items completed`;
+    return;
+  }
+  if (failed.length === 0) {
+    el.className = 'checklist-status pass';
+// ═══════════════════════════════════════════
+// GENERIC CHECKLIST (all claim pages)
+// ═══════════════════════════════════════════
+function setCheckGeneric(id, prefix, total, val) {
+  if (val === undefined) val = true;
+  checkStates[id] = val;
+  const yBtn = document.getElementById(id + '-yes');
+  const nBtn = document.getElementById(id + '-no');
+  const warn = document.getElementById(id + '-warn');
+  if (yBtn) yBtn.className = 'check-btn' + (val ? ' yes' : '');
+  if (nBtn) nBtn.className = 'check-btn' + (!val ? ' no' : '');
+  if (warn) warn.className = 'check-warning' + (!val ? ' show' : '');
+  updateGenericChecklistStatus(prefix, total);
+}
+
+function updateGenericChecklistStatus(prefix, total) {
+  const keys = Array.from({length: total}, (_, i) => `${prefix}-c${i+1}`);
+  const answered = keys.filter(k => checkStates[k] !== undefined);
+  const failed = keys.filter(k => checkStates[k] === false);
+  const el = document.getElementById(`${prefix}-checklist-status`);
+  if (!el) return;
+  if (answered.length < keys.length) {
+    el.className = 'checklist-status pending';
+    el.innerHTML = `${answered.length} of ${keys.length} items completed`;
+    return;
+  }
+  if (failed.length === 0) {
+    el.className = 'checklist-status pass';
+    el.innerHTML = '✓ All eligibility criteria satisfied — client appears eligible to file this claim';
+  } else {
+    el.className = 'checklist-status fail';
+    el.innerHTML = `⚠ ${failed.length} eligibility issue${failed.length > 1 ? 's' : ''} identified — review flagged items before filing`;
+  }
+}
+
+// ═══════════════════════════════════════════
+// CASE LAW RESEARCH (placeholder — AI in Stage 3)
+// ═══════════════════════════════════════════
+function runResearch(inputId, resultId) {
+  const query = document.getElementById(inputId).value.trim();
+  const result = document.getElementById(resultId);
+  if (!query) return;
+  result.className = 'research-placeholder';
+  result.innerHTML = '🔍 AI case law research requires an Anthropic API key — coming in Stage 3. Search term noted: <strong>"' + query + '"</strong>';
+}
+
+// ═══════════════════════════════════════════
+// UNDERPAYMENT CALCULATOR
+// ═══════════════════════════════════════════
+function toggleAwardEBA() {
+  const type = document.getElementById('up-instrument-type').value;
+  const input = document.getElementById('up-award-name');
+  if (type === 'eba') {
+    input.placeholder = 'e.g. Woolworths Group Enterprise Agreement 2021';
+    input.removeAttribute('list');
+  } else {
+    input.placeholder = 'e.g. General Retail Industry Award 2020';
+    input.setAttribute('list', 'award-list');
+  }
+}
+
+function runCalculation() {
+  const award = document.getElementById('up-award-name').value.trim();
+  const classification = document.getElementById('up-classification').value.trim();
+  const ordinary = parseFloat(document.getElementById('up-ordinary').value) || 0;
+  const overtime = parseFloat(document.getElementById('up-overtime').value) || 0;
+  const saturday = parseFloat(document.getElementById('up-saturday').value) || 0;
+  const sunday = parseFloat(document.getElementById('up-sunday').value) || 0;
+  const pubhol = parseFloat(document.getElementById('up-pubhol').value) || 0;
+  const paid = parseFloat(document.getElementById('up-paid').value) || 0;
+  if (!award || !classification) {
+    alert('Please enter the award/EBA name and employee classification before calculating.');
+    return;
+  }
+  const resultDiv = document.getElementById('up-result');
+  const resultBody = document.getElementById('up-result-body');
+  resultDiv.style.display = 'block';
+  const totalHours = ordinary + overtime + saturday + sunday + pubhol;
+  resultBody.innerHTML = `
+    <div style="margin-bottom:14px;padding:12px;background:var(--blue-light);border-radius:8px;font-size:13px;color:#1A6980;border:1px solid #B3E5F5">
+      <strong>⚠ AI rate lookup required:</strong> Add your Anthropic API key in Stage 3 and the AI will search Fair Work for current rates under <strong>${award}</strong> for <strong>${classification}</strong>, show you the source, and calculate the underpayment automatically.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+      <div style="padding:8px 12px;background:white;border-radius:7px;border:1px solid var(--grey-mid)"><div style="color:var(--text-light);margin-bottom:2px">Award / EBA</div><strong>${award}</strong></div>
+      <div style="padding:8px 12px;background:white;border-radius:7px;border:1px solid var(--grey-mid)"><div style="color:var(--text-light);margin-bottom:2px">Classification</div><strong>${classification}</strong></div>
+      <div style="padding:8px 12px;background:white;border-radius:7px;border:1px solid var(--grey-mid)"><div style="color:var(--text-light);margin-bottom:2px">Total Hours</div><strong>${totalHours.toFixed(1)} hrs</strong></div>
+      <div style="padding:8px 12px;background:white;border-radius:7px;border:1px solid var(--grey-mid)"><div style="color:var(--text-light);margin-bottom:2px">Amount Paid</div><strong>$${paid.toFixed(2)}</strong></div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text-light)">
+      Breakdown: ${ordinary}h ordinary · ${overtime}h overtime · ${saturday}h Saturday · ${sunday}h Sunday · ${pubhol}h public holiday
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// ADMIN — THRESHOLDS
+// ═══════════════════════════════════════════
+function saveThreshold(key, value) {
+  thresholds[key] = value;
+  const ind = document.getElementById(`thresh-${key}-saved`);
+  if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 2000); }
+  // Sync to claim pages
+  if (key === 'hit') {
+    const d = document.getElementById('hit-display');
+    const p = document.getElementById('ud-hit-panel');
+    if (d) d.textContent = value;
+    if (p) p.textContent = value;
+  }
+}
+
+// ═══════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════
+function renderUsers() {
+  const grid = document.getElementById('users-grid');
+  const colors = ['#00B5B8','#5BC4E5','#9EA3A8'];
+  grid.innerHTML = USERS.map((u, i) => `
+    <div class="user-card">
+      <div class="user-card-avatar" style="background:${colors[i]}">${u.initials}</div>
+      <div class="user-card-name">${u.name}</div>
+      <div class="user-card-role">${u.role}</div>
+      <div class="user-card-email">${u.email}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// UTILITIES
+// ══════════════════
+
+function setDate() {
+  const d = new Date();
+  const el = document.getElementById('today-date');
+  if(el) el.textContent = d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
