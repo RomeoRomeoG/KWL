@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KWL Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #00B5B8;
+  --teal-dark: #008E91;
+  --teal-light: #E0F7F7;
+  --blue: #5BC4E5;
+  --blue-light: #EAF7FC;
+  --grey: #9EA3A8;
+  --grey-light: #F4F5F6;
+  --grey-mid: #E2E4E7;
+  --dark: #1A2332;
+  --dark-mid: #2D3748;
+  --text: #374151;
+  --text-light: #6B7280;
+  --white: #FFFFFF;
+  --sidebar-width: 280px;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #F0F2F5;
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.logo-mark {
+  width: 38px; height: 38px;
+  background: var(--teal);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: white;
+  flex-shrink: 0;
+}
+
+.sidebar-brand .sb-top {
+  font-size: 9px; letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4); line-height: 1;
+}
+
+.sidebar-brand .sb-main {
+  font-size: 16px; font-weight: 600; color: white; line-height: 1.2;
+}
+
+.sidebar-brand .sb-main span { color: var(--teal); }
+
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: white; flex-shrink: 0;
+}
+
+.user-name { font-size: 13px; font-weight: 500; color: white; }
+.user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+
+.nav-section-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+  padding: 10px 24px 6px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 24px; cursor: pointer;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+  color: rgba(255,255,255,0.6);
+  font-size: 13.5px; font-weight: 400;
+  user-select: none;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.9); }
+
+.nav-item.active {
+  background: rgba(0,181,184,0.12);
+  border-left-color: var(--teal);
+  color: var(--teal); font-weight: 500;
+}
+
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+.nav-item.active svg { opacity: 1; }
+
+.nav-badge {
+  margin-left: auto; background: var(--teal); color: white;
+  font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
+}
+
+.sidebar-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ── MAIN ── */
+.main-content { margin-left: var(--sidebar-width); min-height: 100vh; display: flex; flex-direction: column; }
+
+.topbar {
+  background: white; padding: 0 36px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--grey-mid);
+  position: sticky; top: 0; z-index: 50;
+}
+
+.topbar-title { font-size: 18px; font-weight: 600; color: var(--dark); }
+
+.page-body { padding: 36px; flex: 1; }
+
+/* ── VIEWS ── */
+.view { display: none; }
+.view.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 9px 18px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+  border: none; display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary { background: var(--teal); color: white; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-secondary { background: var(--grey-light); color: var(--text); border: 1.5px solid var(--grey-mid); }
+.btn-secondary:hover { background: var(--grey-mid); }
+.btn-ghost { background: transparent; color: var(--text-light); border: 1.5px solid var(--grey-mid); }
+.btn-ghost:hover { background: var(--grey-light); color: var(--text); }
+
+/* ── DASHBOARD ── */
+.dashboard-welcome {
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-mid) 100%);
+  border-radius: 16px; padding: 36px 40px; margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.dashboard-welcome::after {
+  content: ''; position: absolute; right: -40px; top: -60px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(0,181,184,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.dashboard-welcome h1 { font-family: 'DM Serif Display', serif; font-size: 28px; color: white; margin-bottom: 6px; }
+.dashboard-welcome p { color: rgba(255,255,255,0.55); font-size: 14px; max-width: 480px; }
+.date-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,181,184,0.2); color: var(--teal);
+  font-size: 12px; font-weight: 500; padding: 5px 12px;
+  border-radius: 20px; margin-top: 16px; border: 1px solid rgba(0,181,184,0.3);
+}
+
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+
+.stat-card {
+  background: white; border-radius: 12px; padding: 22px 24px;
+  border: 1px solid var(--grey-mid); transition: box-shadow 0.2s;
+}
+.stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-light); margin-bottom: 10px; }
+.stat-value { font-size: 32px; font-weight: 600; color: var(--dark); line-height: 1; margin-bottom: 4px; }
+.stat-sub { font-size: 12px; color: var(--text-light); }
+.stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.stat-icon.teal { background: var(--teal-light); color: var(--teal); }
+.stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+.stat-icon.grey { background: var(--grey-light); color: var(--grey); }
+.stat-icon.green { background: #ECFDF5; color: var(--success); }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.dash-card { background: white; border-radius: 12px; border: 1px solid var(--grey-mid); overflow: hidden; }
+.dash-card-header { padding: 18px 24px; border-bottom: 1px solid var(--grey-mid); display: flex; align-items: center; justify-content: space-between; }
+.dash-card-header h3 { font-size: 14px; font-weight: 600; color: var(--dark); }
+.dash-card-body { padding: 20px 24px; }
+
+.recent-matter { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--grey-light); }
+.recent-matter:last-child { border-bottom: none; }
+.matter-name { font-size: 13.5px; font-weight: 500; color: var(--dark); }
+.matter-type { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+.matter-badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.badge-teal { background: var(--teal-light); color: var(--teal-dark); }
+.badge-blue { background: var(--blue-light); color: #2A7FA0; }
+.badge-grey { background: var(--grey-light); color: var(--text-light); }
+.badge-green { background: #ECFDF5; color: #065F46; }
+.badge-amber { background: #FFFBEB; color: #92400E; }
+
+.quick-action {
+  display: flex; align-items: center; gap: 14px; padding: 13px 0;
+  cursor: pointer; border-bottom: 1px solid var(--grey-light); transition: all 0.15s;
+}
+.quick-action:last-child { border-bottom: none; }
+.quick-action:hover .qa-title { color: var(--teal); }
+.qa-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--teal-light); display: flex; align-items: center; justify-content: center; color: var(--teal); flex-shrink: 0; }
+.qa-title { font-size: 13.5px; font-weight: 500; color: var(--dark); transition: color 0.15s; }
+.qa-sub { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+.qa-arrow { margin-left: auto; color: var(--grey); }
+
+/* ── MATTERS ── */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.section-header h2 { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--dark); }
+.section-header p { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+
+.search-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.search-input-wrap { position: relative; flex: 1; }
+.search-input-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--grey); width: 16px; }
+.search-input { width: 100%; padding: 10px 14px 10px 40px; border: 1.5px solid var(--grey-mid); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: white; outline: none; transition: border-color 0.2s; }
+.search-input:focus { border-color: var(--teal); }
+
+.matters-table { background: white; border-radius: 12px; border: 1px solid var(--grey-mid); overflow: hidden; }
+.table-header { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 80px; padding: 12px 24px; background: var(--grey-light); border-bottom: 1px solid var(--grey-mid); font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-light); gap: 12px; }
+.table-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 80px; padding: 16px 24px; border-bottom: 1px solid var(--grey-light); align-items: center; gap: 12px; transition: background 0.15s; cursor: pointer; }
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: var(--grey-light); }
+.client-name { font-weight: 500; color: var(--dark); font-size: 14px; }
+.matter-ref { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.cell { font-size: 13.5px; color: var(--text); }
+.action-btns { display: flex; gap: 6px; }
+.icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1.5px solid var(--grey-mid); background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-light); transition: all 0.15s; }
+.icon-btn:hover { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
+.icon-btn svg { width: 13px; height: 13px; }
+
+.empty-state { text-align: center; padding: 60px 24px; color: var(--text-light); }
+.empty-state svg { width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.3; display: block; }
+.empty-state h3 { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+.modal { background: white; border-radius: 16px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.25); }
+.modal-header { padding: 24px 28px 20px; border-bottom: 1px solid var(--grey-mid); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--dark); }
+.modal-close { width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--grey-light); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-light); transition: background 0.15s; }
+.modal-close:hover { background: var(--grey-mid); }
+.modal-body { padding: 24px 28px; }
+.modal-footer { padding: 16px 28px 24px; display: flex; justify-content: flex-end; gap: 10px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--grey-mid); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--dark); outline: none; transition: border-color 0.2s; background: white; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--teal); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* ── CLAIM PAGES ── */
+.claim-page-header { background: white; border-radius: 12px; padding: 28px 32px; margin-bottom: 24px; border: 1px solid var(--grey-mid); display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.claim-page-header h2 { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--dark); margin-bottom: 4px; }
+.claim-page-header p { font-size: 13px; color: var(--text-light); max-width: 500px; }
+.claim-tag { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; white-space: nowrap; margin-top: 4px; display: inline-block; }
+
+.claim-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+
+.claim-section { background: white; border-radius: 12px; border: 1px solid var(--grey-mid); overflow: hidden; margin-bottom: 20px; }
+.claim-section-header { padding: 16px 24px; border-bottom: 1px solid var(--grey-mid); display: flex; align-items: center; gap: 10px; background: var(--grey-light); }
+.claim-section-header h3 { font-size: 13.5px; font-weight: 600; color: var(--dark); }
+.section-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--teal-light); display: flex; align-items: center; justify-content: center; color: var(--teal); flex-shrink: 0; }
+.claim-section-body { padding: 20px 24px; }
+
+/* ── CHECKLIST ── */
+.checklist-item { display: flex; align-items: flex-start; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--grey-light); }
+.checklist-item:last-child { border-bottom: none; }
+.check-control { display: flex; gap: 8px; flex-shrink: 0; margin-top: 1px; }
+.check-btn { width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid var(--grey-mid); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.15s; flex-shrink: 0; }
+.check-btn.yes { border-color: var(--success); background: #ECFDF5; color: var(--success); }
+.check-btn.no { border-color: var(--danger); background: #FEF2F2; color: var(--danger); }
+.check-content { flex: 1; }
+.check-label { font-size: 13.5px; font-weight: 500; color: var(--dark); line-height: 1.4; }
+.check-detail { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+.check-warning { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+.check-warning.show { display: block; }
+.checklist-status { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-top: 16px; }
+.checklist-status.pass { background: #ECFDF5; color: #065F46; }
+.checklist-status.fail { background: #FEF2F2; color: #991B1B; }
+.checklist-status.pending { background: var(--grey-light); color: var(--text-light); }
+
+/* ── ADMIN ── */
+.admin-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+.admin-card { background: white; border-radius: 12px; border: 1px solid var(--grey-mid); padding: 24px; cursor: pointer; transition: all 0.2s; }
+.admin-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--teal); }
+.admin-card-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--teal-light); display: flex; align-items: center; justify-content: center; color: var(--teal); margin-bottom: 14px; }
+.admin-card h3 { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+.admin-card p { font-size: 13px; color: var(--text-light); }
+
+.threshold-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--grey-light); gap: 16px; }
+.threshold-item:last-child { border-bottom: none; }
+.threshold-label { font-size: 13.5px; font-weight: 500; color: var(--dark); }
+.threshold-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.threshold-input { width: 130px; padding: 8px 12px; border: 1.5px solid var(--grey-mid); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--dark); text-align: right; outline: none; transition: border-color 0.2s; }
+.threshold-input:focus { border-color: var(--teal); }
+.save-indicator { font-size: 12px; color: var(--success); display: none; }
+.save-indicator.show { display: inline; }
+
+/* ── USERS ── */
+.users-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.user-card { background: white; border-radius: 12px; border: 1px solid var(--grey-mid); padding: 24px; text-align: center; }
+.user-card-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; color: white; margin: 0 auto 12px; }
+.user-card-name { font-size: 15px; font-weight: 600; color: var(--dark); }
+.user-card-role { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.user-card-email { font-size: 12px; color: var(--teal); margin-top: 6px; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--grey-mid); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-mark">KWL</div>
+      <div class="sidebar-brand">
+        <div class="sb-top">Kelly Workplace</div>
+        <div class="sb-main">KWL <span>Assistant</span></div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sb-avatar">JK</div>
+      <div>
+        <div class="user-name" id="sb-name">Jane Kelly</div>
+        <div class="user-role" id="sb-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" onclick="showView('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('matters',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      Matters
+      <span class="nav-badge" id="matters-count">0</span>
+    </div>
+
+    <div class="nav-section-label">Fair Work Act</div>
+    <div class="nav-item" onclick="showView('unfair-dismissal',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      Unfair Dismissal
+    </div>
+    <div class="nav-item" onclick="showView('gp-dismissal',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Gen. Protections (Dismissal)
+    </div>
+    <div class="nav-item" onclick="showView('gp-no-dismissal',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+      Gen. Protections (No Dismissal)
+    </div>
+    <div class="nav-item" onclick="showView('underpayment',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Underpayments
+    </div>
+
+    <div class="nav-section-label">Equal Opportunity Act</div>
+    <div class="nav-item" onclick="showView('discrimination',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2-8 4v2h16v-2c0-2-3-4-8-4z"/></svg>
+      Discrimination
+    </div>
+    <div class="nav-item" onclick="showView('reasonable-adjustments',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Reasonable Adjustments
+    </div>
+
+    <div class="nav-section-label">Sex Discrimination Act</div>
+    <div class="nav-item" onclick="showView('sexual-harassment',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Sexual Harassment
+    </div>
+
+    <div class="nav-section-label">Administration</div>
+    <div class="nav-item" onclick="showView('admin',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Settings &amp; Thresholds
+    </div>
+    <div class="nav-item" onclick="showView('users',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Users &amp; Roles
+    </div>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <header class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div>
+      <button class="btn btn-primary" onclick="openNewMatterModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Matter
+      </button>
+    </div>
+  </header>
+
+  <div class="page-body">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="dashboard-welcome">
+        <h1>Good morning 👋</h1>
+        <p>Welcome to the KWL Assistant. Manage matters, run checklists and access up-to-date legal thresholds.</p>
+        <div class="date-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="today-date"></span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon teal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+          <div class="stat-label">Active Matters</div>
+          <div class="stat-value" id="stat-matters">0</div>
+          <div class="stat-sub">across all claim types</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+          <div class="stat-label">Unfair Dismissal</div>
+          <div class="stat-value" id="stat-ud">0</div>
+          <div class="stat-sub">active matters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="stat-label">Underpayment</div>
+          <div class="stat-value" id="stat-up">0</div>
+          <div class="stat-sub">active matters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="stat-label">Gen. Protections</div>
+          <div class="stat-value" id="stat-gp">0</div>
+          <div class="stat-sub">active matters</div>
+        </div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h3>Recent Matters</h3>
+            <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="showView('matters',document.querySelector('[onclick*=matters]'))">View all</button>
+          </div>
+          <div class="dash-card-body" id="recent-matters-list">
+            <div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px">No matters yet. Create your first matter to get started.</div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header"><h3>Quick Actions</h3></div>
+          <div class="dash-card-body">
+            <div class="quick-action" onclick="openNewMatterModal()">
+              <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+              <div><div class="qa-title">New Matter</div><div class="qa-sub">Create a new client matter</div></div>
+              <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+            </div>
+            <div class="quick-action" onclick="showView('underpayment',document.querySelector('[onclick*=underpayment]'))">
+              <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div><div class="qa-title">Underpayment Calculator</div><div class="qa-sub">Run an award calculation</div></div>
+              <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+            </div>
+            <div class="quick-action" onclick="showView('unfair-dismissal',document.querySelector('[onclick*=unfair-dismissal]'))">
+              <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+              <div><div class="qa-title">Unfair Dismissal Checklist</div><div class="qa-sub">Eligibility and claim drafting</div></div>
+              <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+            </div>
+            <div class="quick-action" onclick="showView('admin',document.querySelector('[onclick*=admin]'))">
+              <div class="qa-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></div>
+              <div><div class="qa-title">Update Thresholds</div><div class="qa-sub">Edit legal figures and limits</div></div>
+              <div class="qa-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATTERS -->
+    <div class="view" id="view-matters">
+      <div class="section-header">
+        <div><h2>Matters</h2><p>All client matters across every claim type</p></div>
+        <button class="btn btn-primary" onclick="openNewMatterModal()">+ New Matter</button>
+      </div>
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-input" placeholder="Search by client name or matter reference…" oninput="filterMatters(this.value)"/>
+        </div>
+      </div>
+      <div class="matters-table">
+        <div class="table-header">
+          <div>Client</div><div>Claim Type</div><div>Assigned To</div><div>Status</div><div>Created</div><div></div>
+        </div>
+        <div id="matters-table-body">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+            <h3>No matters yet</h3><p>Create your first matter to get started</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNFAIR DISMISSAL -->
+    <div class="view" id="view-unfair-dismissal">
+      <div class="claim-page-header">
+        <div>
+          <div class="claim-tag badge-teal">Fair Work Act 2009 (Cth) — ss.394–405</div>
+          <h2>Unfair Dismissal</h2>
+          <p>Eligibility checklist, threshold verification and claim drafting for applications under s.394 of the Fair Work Act 2009.</p>
+        </div>
+        <button class="btn btn-primary">Draft Application</button>
+      </div>
+      <div class="claim-layout">
+        <div>
+          <div class="claim-section">
+            <div class="claim-section-header">
+              <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+              <h3>Eligibility Checklist</h3>
+            </div>
+            <div class="claim-section-body">
+              <p style="font-size:13px;color:var(--text-light);margin-bottom:16px">Answer each item to confirm eligibility before drafting.</p>
+              <div class="checklist-item">
+                <div class="check-control">
+                  <button class="check-btn" id="ud-c1-yes" onclick="setCheck('ud-c1','ud',6,true)">✓</button>
+                  <button class="check-btn" id="ud-c1-no" onclick="setCheck('ud-c1','ud',6,false)">✗</button>
+                </div>
+                <div class="check-content">
+                  <div class="check-label">Minimum employment period met</div>
+                  <div class="check-detail">6 months (or 12 months for small business with fewer than 15 employees)</div>
+                  <div class="check-warning" id="ud-c1-warn">⚠ Claim may not be available — minimum employment period not satisfied.</div>
+                </div>
+              </div>
+              <div class="checklist-item">
+                <div class="check-control">
+                  <button class="check-btn" id="ud-c2-yes" onclick="setCheck('ud-c2','ud',6,true)">✓</button>
+                  <button class="check-btn" id="ud-c2-no" onclick="setCheck('ud-c2','ud',6,false)">✗</button>
+                </div>
+                <div class="check-content">
+                  <div class="check-label">Earnings below the High Income Threshold</div>
+                  <div class="check-detail">Current threshold: <strong id="hit-display">$183,000</strong> per annum (excl. compulsory super)</div>
+                  <div class="check-warning" id="ud-c2-warn">⚠ If employee earns above the HIT and is not covered by an award or EBA, they are not eligible. Consider general protections.</div>
+                </div>
+              </div>
+              <div class="checklist-item">
+                <div class="check-control">
+                  <button class="check-btn" id="ud-c3-yes" onclick="setCheck('ud-c3','ud',6,true)">✓</button>
+                  <button class="check-btn" id="ud-c3-no" onclick="setCheck('ud-c3','ud',6,false)">✗</button>
+                </div>
+                <div class="check-content">
+                  <div class="check-label">Application filed within 21 days of dismissal taking effect</div>
+                  <div class="check-detail">Time limit is strict — FWC may grant extensions only in exceptional circumstances</div>
+                  <div class="check-warning" id="ud-c3-warn">⚠ Application is out of time. A compelling reason will be required to seek an extension under s.394(3).</div>
+                </div>
+              </div>
+              <div class="checklist-item">
+                <div class="check-control">
+                  <button class="check-btn" id="ud-c4-yes" onclick="setCheck('ud-c4','ud',6,true)">✓</button>
+                  <button class="check-btn" id="ud-c4-no" onclick="setCheck('ud-c4','ud',6,false)">✗</button>
+                </div>
+                <div class="check-content">
+                  <div class="check-label">Employee is not a casual without regular and systematic engagement</div>
+                  <div class="check-detail">Casual employees must demonstrate regular and systematic engagement with reasonable expectation of continued employment</div>
+                  <div class="check-warning" id="ud-c4-warn">⚠ Pure casual employees without regular/systematic engagement may not be eligible.</div>
+                </div>
+              </div>
+              <div class="checklist-item">
+                <div class="check-control">
+                  <button class="check-btn" id="ud-c5-yes" onclick="setCheck('ud-c5','ud',6,true)">✓</button>
+                  <button class="check-btn" id="ud-c5-no" onclick="setCheck('ud-c5','ud',6,false)">✗</button>
+                </div>
+                <div class="check-content">
+                  <div class="check-label">Dismissal was not a genuine redundancy</div>
+                  <div class="check-detail">If genuine redundancy (role no longer required + proper consultation), the claim will be dismissed under s.385(d)</div>
+                  <div class="check-warning" id="ud-c5-warn">⚠ If genuine redundancy, UD claim will likely fail. Consider whether proper consultation occurred or redeployment was possible.</div>
+                </div>
+              </div>
+              <div class="checklist-item">
+                <div class="check-control">
+                  <button class="check-btn" id="ud-c6-yes" onclick="setCheck('ud-c6','ud',6,true)">✓</button>
+                  <button class="check-btn" id="ud-c6-no" onclick="setCheck('ud-c6','ud',6,false)">✗</button>
+                </div>
+                <div class="check-content">
+                  <div class="check-label">Not excluded by an applicable enterprise agreement dispute resolution clause</div>
+                  <div class="check-detail">Some EAs contain dispute resolution procedures that must be exhausted first</div>
+                  <div class="check-warning" id="ud-c6-warn">⚠ Check the enterprise agreement for prerequisite dispute resolution processes.</div>
+                </div>
+              </div>
+              <div class="checklist-status pending" id="ud-checklist-status">Complete all checklist items above to see eligibility status</div>
+            </div>
+          </div>
+          <div class="claim-section">
+            <div class="claim-section-header">
+              <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+              <h3>Other Breaches (Optional)</h3>
+            </div>
+            <div class="claim-section-body">
+              <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Additional claims if filing in the Federal Court.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Award breach (s.45 FWA)</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> NES breach (s.44 FWA)</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Underpayment of wages</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Failure to pay entitlements on termination</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Unlawful termination (s.772 FWA)</label>
+              </div>
+              <textarea style="width:100%;padding:10px 14px;border:1.5px solid var(--grey-mid);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;min-height:80px;resize:vertical;outline:none" placeholder="Describe any other breaches to include…"></textarea>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="claim-section">
+            <div class="claim-section-header">
+              <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <h3>Case Law Research</h3>
+            </div>
+            <div class="claim-section-body">
+              <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Search for recent FWC decisions relevant to this matter.</p>
+              <div style="display:flex;gap:8px;margin-bottom:12px">
+                <input style="flex:1;padding:9px 12px;border:1.5px solid var(--grey-mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none" placeholder="e.g. valid reason, procedural fairness…"/>
+                <button class="btn btn-primary" style="padding:9px 14px">Search</button>
+              </div>
+              <div style="background:var(--grey-light);border-radius:8px;padding:16px;text-align:center;font-size:13px;color:var(--text-light)">AI-powered case law research — coming in Stage 3</div>
+            </div>
+          </div>
+          <div class="claim-section">
+            <div class="claim-section-header">
+              <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></div>
+              <h3>Key Thresholds</h3>
+            </div>
+            <div class="claim-section-body">
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">High Income Threshold</span><strong id="ud-hit-panel">$183,000</strong></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Min. Employment (standard)</span><strong>6 months</strong></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--grey-light);font-size:13px"><span style="color:var(--text-light)">Min. Employment (small business)</span><strong>12 months</strong></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:var(--text-light)">Filing deadline</span><strong>21 days</strong></div>
+              <div style="margin-top:12px;padding:10px;background:var(--teal-light);border-radius:8px;font-size:12px;color:var(--teal-dark)">Thresholds are editable in <strong>Settings &amp; Thresholds</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUB VIEWS for other claim types -->
+    <div class="view" id="view-gp-dismissal"><div class="claim-page-header"><div><div class="claim-tag badge-blue">Fair Work Act 2009 (Cth) — s.365</div><h2>General Protections — Involving Dismissal</h2><p>Eligibility checklist and claim drafting for adverse action applications under s.365 where dismissal has occurred.</p></div></div><div style="background:white;border-radius:12px;border:1px solid var(--grey-mid);padding:40px;text-align:center;color:var(--text-light);font-size:14px">Full checklist and templates coming in Stage 3</div></div>
+    <div class="view" id="view-gp-no-dismissal"><div class="claim-page-header"><div><div class="claim-tag badge-blue">Fair Work Act 2009 (Cth) — s.372</div><h2>General Protections — Not Involving Dismissal</h2><p>Eligibility checklist and claim drafting for adverse action applications under s.372 where no dismissal has occurred.</p></div></div><div style="background:white;border-radius:12px;border:1px solid var(--grey-mid);padding:40px;text-align:center;color:var(--text-light);font-size:14px">Full checklist and templates coming in Stage 3</div></div>
+    <div class="view" id="view-underpayment"><div class="claim-page-header"><div><div class="claim-tag badge-green">Fair Work Act 2009 (Cth) — s.45 / NES</div><h2>Underpayment Calculator</h2><p>AI-assisted award rate retrieval and underpayment calculation.</p></div></div><div style="background:white;border-radius:12px;border:1px solid var(--grey-mid);padding:40px;text-align:center;color:var(--text-light);font-size:14px">AI-powered calculator coming in Stage 3</div></div>
+    <div class="view" id="view-discrimination"><div class="claim-page-header"><div><div class="claim-tag badge-amber">Equal Opportunity Act 2010 (Vic) — VCAT</div><h2>Discrimination Against Employee</h2><p>Eligibility checklist for discrimination complaints under the EOA 2010 (Vic).</p></div></div><div style="background:white;border-radius:12px;border:1px solid var(--grey-mid);padding:40px;text-align:center;color:var(--text-light);font-size:14px">Full checklist and templates coming in Stage 3</div></div>
+    <div class="view" id="view-reasonable-adjustments"><div class="claim-page-header"><div><div class="claim-tag badge-amber">Equal Opportunity Act 2010 (Vic) — s.20</div><h2>Failure to Make Reasonable Adjustments</h2><p>Eligibility checklist for failure to make reasonable adjustments under the EOA 2010 (Vic).</p></div></div><div style="background:white;border-radius:12px;border:1px solid var(--grey-mid);padding:40px;text-align:center;color:var(--text-light);font-size:14px">Full checklist and templates coming in Stage 3</div></div>
+    <div class="view" id="view-sexual-harassment"><div class="claim-page-header"><div><div class="claim-tag badge-grey">Sex Discrimination Act 1984 (Cth)</div><h2>Sexual Harassment</h2><p>Eligibility checklist for sexual harassment complaints under the SDA 1984 (Cth).</p></div></div><div style="background:white;border-radius:12px;border:1px solid var(--grey-mid);padding:40px;text-align:center;color:var(--text-light);font-size:14px">Full checklist and templates coming in Stage 3</div></div>
+
+    <!-- ADMIN -->
+    <div class="view" id="view-admin">
+      <div class="section-header"><div><h2>Settings &amp; Thresholds</h2><p>Edit legal thresholds and filing deadlines. Changes apply immediately across the app.</p></div></div>
+      <div class="claim-section">
+        <div class="claim-section-header">
+          <div class="section-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <h3>Financial Thresholds</h3>
+        </div>
+        <div class="claim-section-body">
+          <div class="threshold-item">
+            <div><div class="threshold-label">High Income Threshold</div><div class="threshold-sub">Applies to unfair dismissal eligibility. Updated 1 July each year.</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input class="threshold-input" id="thresh-hit" value="$183,000" onchange="saveThreshold('hit',this.value)"/>
+              <span class="save-indicator" id="thresh-hit-saved">✓ Saved</span>
+            </div>
+          </div>
+          <div class="threshold-item">
+            <div><div class="threshold-label">Unfair Dismissal Compensation Cap</div><div class="threshold-sub">Maximum compensation is the lesser of 26 weeks pay or half the HIT.</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input class="threshold-input" id="thresh-comp" value="$91,500" onchange="saveThreshold('comp',this.value)"/>
+              <span class="save-indicator" id="thresh-comp-saved">✓ Saved</span>
+            </div>
+          </div>
+          <div class="threshold-item">
+            <div><div class="threshold-label">National Minimum Wage</div><div class="threshold-sub">Current NMW per hour. Updated annually after Fair Work Commission review.</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input class="threshold-input" id="thresh-nmw" value="$24.10/hr" onchange="saveThreshold('nmw',this.value)"/>
+              <span class="save-indicator" id="thresh-nmw-saved">✓ Saved</span>
+            </div>
+          </div>
+          <div class="threshold-item">
+            <div><div class="threshold-label">GP / UD Filing Deadline</div><div class="threshold-sub">Days from dismissal to file under s.394 or s.365.</div></div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input class="threshold-input" id="thresh-deadline" value="21 days" onchange="saveThreshold('deadline',this.value)"/>
+              <span class="save-indicator" id="thresh-deadline-saved">✓ Saved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="view" id="view-users">
+      <div class="section-header"><div><h2>Users &amp; Roles</h2><p>Manage who has access to the KWL Assistant</p></div><button class="btn btn-primary">+ Invite User</button></div>
+      <div class="users-grid" id="users-grid"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- NEW MATTER MODAL -->
+<div class="modal-overlay" id="new-matter-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New Matter</h3>
+      <button class="modal-close" onclick="closeModal('new-matter-modal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Client First Name</label><input type="text" id="m-firstname" placeholder="e.g. Sarah"/></div>
+        <div class="form-group"><label>Client Last Name</label><input type="text" id="m-lastname" placeholder="e.g. Thompson"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Matter Reference</label><input type="text" id="m-ref" placeholder="e.g. KWL-2025-001"/></div>
+        <div class="form-group">
+          <label>Claim Type</label>
+          <select id="m-claimtype">
+            <option value="">Select claim type…</option>
+            <option>Unfair Dismissal</option>
+            <option>General Protections (Dismissal)</option>
+            <option>General Protections (No Dismissal)</option>
+            <option>Underpayment</option>
+            <option>Discrimination</option>
+            <option>Failure to Make Reasonable Adjustments</option>
+            <option>Sexual Harassment</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assigned Lawyer</label>
+          <select id="m-lawyer"><option>Jane Kelly</option><option>Mark Chen</option><option>Priya Sharma</option></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="m-status"><option>Active</option><option>On Hold</option><option>Closed</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="m-notes" placeholder="Brief summary of the matter…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('new-matter-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="createMatter()">Create Matter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// No email addresses in this file to avoid injection issues
+
+var matters = [];
+var checkStates = {};
+
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
+var viewTitles = {
+  'dashboard': 'Dashboard',
+  'matters': 'Matters',
+  'unfair-dismissal': 'Unfair Dismissal',
+  'gp-dismissal': 'General Protections — Dismissal',
+  'gp-no-dismissal': 'General Protections — No Dismissal',
+  'underpayment': 'Underpayment Calculator',
+  'discrimination': 'Discrimination',
+  'reasonable-adjustments': 'Reasonable Adjustments',
+  'sexual-harassment': 'Sexual Harassment',
+  'admin': 'Settings & Thresholds',
+  'users': 'Users & Roles'
+};
+
+function showView(name, el) {
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var view = document.getElementById('view-' + name);
+  if (view) view.classList.add('active');
+  if (el) el.classList.add('active');
+  var titleEl = document.getElementById('topbar-title');
+  if (titleEl) titleEl.textContent = viewTitles[name] || name;
+}
+
+// ── MATTERS ─────────────────────────────────────────────────────────────────
+function openNewMatterModal() {
+  var n = String(matters.length + 1).padStart(3, '0');
+  var yr = new Date().getFullYear();
+  document.getElementById('m-ref').value = 'KWL-' + yr + '-' + n;
+  document.getElementById('new-matter-modal').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function createMatter() {
+  var fn = document.getElementById('m-firstname').value.trim();
+  var ln = document.getElementById('m-lastname').value.trim();
+  var ref = document.getElementById('m-ref').value.trim();
+  var claimType = document.getElementById('m-claimtype').value;
+  var lawyer = document.getElementById('m-lawyer').value;
+  var status = document.getElementById('m-status').value;
+  var notes = document.getElementById('m-notes').value.trim();
+  if (!fn || !ln || !claimType) { alert('Please fill in client name and claim type.'); return; }
+  var matter = {
+    id: Date.now(),
+    client: fn + ' ' + ln,
+    ref: ref || ('KWL-' + Date.now()),
+    claimType: claimType,
+    lawyer: lawyer,
+    status: status,
+    notes: notes,
+    created: new Date().toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric' })
+  };
+  matters.unshift(matter);
+  closeModal('new-matter-modal');
+  document.getElementById('m-firstname').value = '';
+  document.getElementById('m-lastname').value = '';
+  document.getElementById('m-notes').value = '';
+  renderMatters();
+  updateStats();
+}
+
+function renderMatters(filter) {
+  filter = filter || '';
+  var body = document.getElementById('matters-table-body');
+  var list = filter ? matters.filter(function(m) {
+    return m.client.toLowerCase().includes(filter.toLowerCase()) || m.ref.toLowerCase().includes(filter.toLowerCase());
+  }) : matters;
+
+  if (!list.length) {
+    body.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><h3>No matters found</h3><p>' + (filter ? 'Try a different search term' : 'Create your first matter to get started') + '</p></div>';
+    return;
+  }
+
+  function badge(s) { return ({Active:'badge-teal','On Hold':'badge-amber',Closed:'badge-grey'})[s] || 'badge-grey'; }
+
+  body.innerHTML = list.map(function(m) {
+    return '<div class="table-row">' +
+      '<div><div class="client-name">' + m.client + '</div><div class="matter-ref">' + m.ref + '</div></div>' +
+      '<div class="cell"><span class="matter-badge badge-blue" style="font-size:11px">' + m.claimType + '</span></div>' +
+      '<div class="cell">' + m.lawyer + '</div>' +
+      '<div class="cell"><span class="matter-badge ' + badge(m.status) + '">' + m.status + '</span></div>' +
+      '<div class="cell">' + m.created + '</div>' +
+      '<div class="action-btns">' +
+        '<button class="icon-btn" title="Delete" onclick="deleteMatter(' + m.id + ');event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' +
+      '</div></div>';
+  }).join('');
+
+  // Recent matters on dashboard
+  var recent = matters.slice(0, 4);
+  var rDiv = document.getElementById('recent-matters-list');
+  if (!recent.length) {
+    rDiv.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px">No matters yet.</div>';
+  } else {
+    rDiv.innerHTML = recent.map(function(m) {
+      return '<div class="recent-matter"><div><div class="matter-name">' + m.client + '</div><div class="matter-type">' + m.ref + ' · ' + m.claimType + '</div></div><span class="matter-badge ' + badge(m.status) + '">' + m.status + '</span></div>';
+    }).join('');
+  }
+}
+
+function deleteMatter(id) {
+  if (!confirm('Delete this matter?')) return;
+  matters = matters.filter(function(m) { return m.id !== id; });
+  renderMatters();
+  updateStats();
+}
+
+function filterMatters(val) { renderMatters(val); }
+
+function updateStats() {
+  document.getElementById('stat-matters').textContent = matters.length;
+  document.getElementById('stat-ud').textContent = matters.filter(function(m) { return m.claimType === 'Unfair Dismissal'; }).length;
+  document.getElementById('stat-up').textContent = matters.filter(function(m) { return m.claimType === 'Underpayment'; }).length;
+  document.getElementById('stat-gp').textContent = matters.filter(function(m) { return m.claimType.indexOf('General Protections') === 0; }).length;
+  document.getElementById('matters-count').textContent = matters.length;
+}
+
+// ── CHECKLIST ────────────────────────────────────────────────────────────────
+function setCheck(id, prefix, total, val) {
+  checkStates[id] = val;
+  var yBtn = document.getElementById(id + '-yes');
+  var nBtn = document.getElementById(id + '-no');
+  var warn = document.getElementById(id + '-warn');
+  if (yBtn) yBtn.className = 'check-btn' + (val ? ' yes' : '');
+  if (nBtn) nBtn.className = 'check-btn' + (!val ? ' no' : '');
+  if (warn) warn.className = 'check-warning' + (!val ? ' show' : '');
+  updateChecklistStatus(prefix, total);
+}
+
+function updateChecklistStatus(prefix, total) {
+  var keys = [];
+  for (var i = 1; i <= total; i++) { keys.push(prefix + '-c' + i); }
+  var answered = keys.filter(function(k) { return checkStates[k] !== undefined; });
+  var failed = keys.filter(function(k) { return checkStates[k] === false; });
+  var el = document.getElementById(prefix + '-checklist-status');
+  if (!el) return;
+  if (answered.length < keys.length) {
+    el.className = 'checklist-status pending';
+    el.textContent = answered.length + ' of ' + keys.length + ' items completed';
+    return;
+  }
+  if (failed.length === 0) {
+    el.className = 'checklist-status pass';
+    el.textContent = '✓ All eligibility criteria satisfied — client appears eligible to file';
+  } else {
+    el.className = 'checklist-status fail';
+    el.textContent = '⚠ ' + failed.length + ' eligibility issue' + (failed.length > 1 ? 's' : '') + ' identified — review flagged items before filing';
+  }
+}
+
+// ── ADMIN THRESHOLDS ─────────────────────────────────────────────────────────
+function saveThreshold(key, value) {
+  var ind = document.getElementById('thresh-' + key + '-saved');
+  if (ind) {
+    ind.classList.add('show');
+    setTimeout(function() { ind.classList.remove('show'); }, 2000);
+  }
+  if (key === 'hit') {
+    var d = document.getElementById('hit-display');
+    var p = document.getElementById('ud-hit-panel');
+    if (d) d.textContent = value;
+    if (p) p.textContent = value;
+  }
+}
+
+// ── USERS ────────────────────────────────────────────────────────────────────
+function renderUsers() {
+  var grid = document.getElementById('users-grid');
+  if (!grid) return;
+  var users = [
+    { name: 'Jane Kelly', role: 'Admin', initials: 'JK', color: '#00B5B8' },
+    { name: 'Mark Chen', role: 'Lawyer', initials: 'MC', color: '#5BC4E5' },
+    { name: 'Priya Sharma', role: 'Support Staff', initials: 'PS', color: '#9EA3A8' }
+  ];
+  grid.innerHTML = users.map(function(u) {
+    return '<div class="user-card">' +
+      '<div class="user-card-avatar" style="background:' + u.color + '">' + u.initials + '</div>' +
+      '<div class="user-card-name">' + u.name + '</div>' +
+      '<div class="user-card-role">' + u.role + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function setDate() {
+  var el = document.getElementById('today-date');
+  if (el) {
+    var d = new Date();
+    el.textContent = d.toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  setDate();
+  renderUsers();
+});
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(function(o) {
+  o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
