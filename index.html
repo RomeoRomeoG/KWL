@@ -200,8 +200,10 @@
   .login-demo strong { color: var(--text); }
 
   /* ── APP SHELL ── */
+  #login-screen { display: none !important; }
+
   #app-shell {
-    display: none;
+    display: flex;
     min-height: 100vh;
   }
 
@@ -2633,7 +2635,18 @@ function doLogout() {
   document.getElementById('login-error').style.display = 'none';
 }
 
-document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+// ═══════════════════════════════════════════
+// AUTO-INIT (no login required)
+// ═══════════════════════════════════════════
+currentUser = { name: 'Jane Kelly', role: 'Admin', initials: 'JK' };
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('sb-avatar').textContent = 'JK';
+  document.getElementById('sb-name').textContent = 'Jane Kelly';
+  document.getElementById('sb-role').textContent = 'Administrator';
+  document.getElementById('admin-nav').style.display = 'block';
+  setDate();
+  renderUsers();
+});
 
 // ═══════════════════════════════════════════
 // NAVIGATION
